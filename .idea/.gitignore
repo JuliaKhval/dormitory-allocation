@@ -1,0 +1,34 @@
+# Compiled output
+/target/
+/build/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# Logs
+logs/
+*.log
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Environment properties
+application-*.properties
+application-*.yml
+.env
+
+# Test reports
+test-output/
+
+# OS metadata
+.DS_Store
+Thumbs.db
