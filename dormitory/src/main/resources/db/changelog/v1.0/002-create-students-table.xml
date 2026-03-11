@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+<changeSet id="002-create-students-table" author="Julia Khval">
+<createTable tableName="students">
+    <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+    </column>
+    <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_students_user" references="users(id)"/>
+    </column>
+    <column name="first_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="last_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="middle_name" type="VARCHAR(100)"/>
+    <column name="faculty" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="course" type="INT">
+        <constraints nullable="false"/>
+    </column>
+    <column name="group_name" type="VARCHAR(20)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="gender" type="VARCHAR(10)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="country" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="average_score" type="DECIMAL(5,2)">
+        <constraints nullable="false"/>
+    </column>
+    <column name="benefits" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+    </column>
+</createTable>
+
+</changeSet>
+        </databaseChangeLog>

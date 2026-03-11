@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+<include file="v1.0/001-create-users-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/002-create-students-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/003-create-wardens-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/004-create-rooms-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/005-create-requests-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/006-create-request-preferred-roommates-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/007-create-allocations-table.xml" relativeToChangelogFile="true"/>
+<include file="v1.0/008-create-admins-table.xml" relativeToChangelogFile="true"/>
+        </databaseChangeLog>

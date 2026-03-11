@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/dormitory_db
-    username: dorm_user
-    password: dorm_pass
+    username: postgres
+    password: root
     driver-class-name: org.postgresql.Driver
 
   jpa:
