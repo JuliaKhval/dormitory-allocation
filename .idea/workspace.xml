@@ -4,11 +4,51 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fc89226-1f92-43b7-b3aa-21d9798aed94" name="Changes" comment="Initial commit" />
+    <list default="true" id="4fc89226-1f92-43b7-b3aa-21d9798aed94" name="Changes" comment="update: liquibase script and schema database">
+      <change afterPath="$PROJECT_DIR$/.idea/diff-generator.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/StudentController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/StudentMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/StudentRegistrationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/resources/liquibase.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/DormitoryApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/DormitoryApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/AllocationResultDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/AllocationResultDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/CreateRequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/CreateRequestDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/RequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/RequestDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/StudentProfileDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/StudentProfileDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/SystemStatsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/SystemStatsDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Admin.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Admin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Allocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Allocation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Request.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Request.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Room.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Room.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Student.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Warden.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Warden.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/enums/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/enums/Role.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AdminRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AdminRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AllocationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AllocationRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RoomRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/StudentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/WardenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/WardenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AuthService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/resources/application.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -25,6 +65,10 @@
     "accountId": "698f92a9-cf03-4061-9b8f-44fe8c1c64d5"
   }
 }]]></component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 8
 }]]></component>
@@ -37,19 +81,40 @@
   "keyToString": {
     "Maven.dormitory [clean].executor": "Run",
     "Maven.dormitory [compile].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.DormitoryApplication.executor": "Run",
     "git-widget-placeholder": "develop",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Java/dormitory-allocation/dormitory/src/main/resources",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Java\dormitory-allocation\dormitory\src\main\resources" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Java\dormitory-allocation\dormitory\src\main\resources\db\changelog\v2.0" />
+      <recent name="D:\Java\dormitory-allocation\dormitory\src\main\resources\db" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="DormitoryApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="dormitory" />
@@ -74,7 +139,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1772791523323</updated>
-      <workItem from="1772791524963" duration="756000" />
+      <workItem from="1772791524963" duration="25330000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -84,7 +149,71 @@
       <option name="project" value="LOCAL" />
       <updated>1772791683392</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="build: Init dependencies and configure yml">
+      <option name="closed" value="true" />
+      <created>1772792326928</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1772792326928</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: add project package structure and enums">
+      <option name="closed" value="true" />
+      <created>1772793422101</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1772793422101</updated>
+    </task>
+    <task id="LOCAL-00004" summary="feat: create entities">
+      <option name="closed" value="true" />
+      <created>1772794589111</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772794589111</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat: add repositories for all entities">
+      <option name="closed" value="true" />
+      <created>1773043081253</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1773043081253</updated>
+    </task>
+    <task id="LOCAL-00006" summary="feat: add liquibase migration scripts for initial schema">
+      <option name="closed" value="true" />
+      <created>1773217672760</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1773217672760</updated>
+    </task>
+    <task id="LOCAL-00007" summary="build: add liquibase dependency">
+      <option name="closed" value="true" />
+      <created>1773217874525</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1773217874525</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feat: add all DTO classes with validation annotations">
+      <option name="closed" value="true" />
+      <created>1773220725223</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1773220725223</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update: liquibase script and schema database">
+      <option name="closed" value="true" />
+      <created>1774359310966</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1774359310966</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -103,6 +232,14 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit" />
+    <MESSAGE value="build: Init dependencies and configure yml" />
+    <MESSAGE value="feat: add project package structure and enums" />
+    <MESSAGE value="feat: create entities" />
+    <MESSAGE value="feat: add repositories for all entities" />
+    <MESSAGE value="feat: add liquibase migration scripts for initial schema" />
+    <MESSAGE value="build: add liquibase dependency" />
+    <MESSAGE value="feat: add all DTO classes with validation annotations" />
+    <MESSAGE value="update: liquibase script and schema database" />
+    <option name="LAST_COMMIT_MESSAGE" value="update: liquibase script and schema database" />
   </component>
 </project>
