@@ -3,12 +3,11 @@
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
-<include file="v1.0/001-create-users-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/002-create-students-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/003-create-wardens-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/004-create-rooms-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/005-create-requests-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/006-create-request-preferred-roommates-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/007-create-allocations-table.xml" relativeToChangelogFile="true"/>
-<include file="v1.0/008-create-admins-table.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/001-drop-old-tables.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/002-create-roles-users-credentials.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/003-create-reference-tables.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/004-create-student-details.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/005-create-rooms-facilities.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/006-create-requests-preferences.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/007-create-allocations.xml" relativeToChangelogFile="true"/>
         </databaseChangeLog>

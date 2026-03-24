@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="v2.0-011-create-student-details" author="Julia Khval">
+        <createTable tableName="student_details">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="gender" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="average_score" type="DECIMAL(5,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(20)"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_student_details_user"
+                                 baseTableName="student_details"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addForeignKeyConstraint constraintName="fk_student_details_group"
+                                 baseTableName="student_details"
+                                 baseColumnNames="group_id"
+                                 referencedTableName="study_groups"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_student_details_country"
+                                 baseTableName="student_details"
+                                 baseColumnNames="country_id"
+                                 referencedTableName="countries"
+                                 referencedColumnNames="id"/>
+
+    </changeSet>
+
+    <changeSet id="v2.0-012-create-student-benefits" author="Julia Khval">
+        <createTable tableName="student_benefits">
+            <column name="student_details_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="benefit_type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="student_benefits" columnNames="student_details_id, benefit_type_id"/>
+        <addForeignKeyConstraint constraintName="fk_student_benefits_student"
+                                 baseTableName="student_benefits"
+                                 baseColumnNames="student_details_id"
+                                 referencedTableName="student_details"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <addForeignKeyConstraint constraintName="fk_student_benefits_benefit"
+                                 baseTableName="student_benefits"
+                                 baseColumnNames="benefit_type_id"
+                                 referencedTableName="benefit_types"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>
