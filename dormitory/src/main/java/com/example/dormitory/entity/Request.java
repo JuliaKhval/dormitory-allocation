@@ -1,9 +1,11 @@
 package com.example.dormitory.entity;
 
-import com.example.dormitory.enums.RequestStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,7 +13,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "requests")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,25 +22,23 @@ public class Request {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private RequestStatus status = RequestStatus.PENDING;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToMany
-    @JoinTable(
-            name = "request_preferred_roommates",
-            joinColumns = @JoinColumn(name = "request_id"),
-            inverseJoinColumns = @JoinColumn(name = "preferred_student_id")
-    )
-    private List<Student> preferredRoommates = new ArrayList<>();
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "request", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Column(nullable = false)
+    private Integer year;
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestPreference> preferences = new ArrayList<>();
+
+    @OneToOne(mappedBy = "request")
     private Allocation allocation;
 }

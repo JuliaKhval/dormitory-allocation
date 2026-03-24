@@ -2,14 +2,15 @@ package com.example.dormitory.entity;
 
 import com.example.dormitory.enums.RoomType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "rooms")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,25 +19,27 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private String building;
 
     @Column(nullable = false)
     private Integer floor;
 
-    @Column(name = "room_number", nullable = false, length = 10)
+    @Column(name = "room_number", nullable = false)
     private String roomNumber;
 
     @Column(nullable = false)
     private Integer capacity;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private RoomType type;
 
-    @Column(length = 255)
-    private String facilities;
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
-    private List<Allocation> allocations = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "room_facilities",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "facility_id")
+    )
+    private List<Facility> facilities = new ArrayList<>();
 }

@@ -1,21 +1,20 @@
 package com.example.dormitory.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "admins")
-@Data
+@Table(name = "facilities")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Admin {
+public class Facility {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    @Column(nullable = false, unique = true)
+    private String name;
 }

@@ -1,14 +1,16 @@
 package com.example.dormitory.entity;
 
+import com.example.dormitory.enums.AllocationStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "allocations")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,6 +26,10 @@ public class Allocation {
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AllocationStatus status;
 
     @CreationTimestamp
     @Column(name = "allocated_at", nullable = false, updatable = false)
