@@ -1,8 +1,8 @@
 package com.example.dormitory.enums;
 
-public enum RequestStatus {
+public enum RequestPreferenceStatus {
     PENDING,
+    CONFIRMED,
     APPROVED,
-    REJECTED,
-    ALLOCATED
+    REJECTED
 }
