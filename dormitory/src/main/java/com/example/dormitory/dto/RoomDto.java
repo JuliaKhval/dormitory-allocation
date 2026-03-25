@@ -1,6 +1,7 @@
 package com.example.dormitory.dto;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class RoomDto {
@@ -9,7 +10,7 @@ public class RoomDto {
     private Integer floor;
     private String roomNumber;
     private Integer capacity;
+    private String type;
+    private List<String> facilities;
     private Integer occupied;
-    private String type;      // MALE, FEMALE, MIXED
-    private String facilities;
 }

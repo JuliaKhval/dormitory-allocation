@@ -5,5 +5,5 @@ import java.util.List;
 
 @Data
 public class CreateRequestDto {
-    private List<Long> preferredRoommates;
+    private List<Long> preferredUserIds;
 }

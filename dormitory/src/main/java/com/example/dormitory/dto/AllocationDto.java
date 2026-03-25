@@ -11,6 +11,7 @@ public class AllocationDto {
     private String building;
     private Integer floor;
     private String roomNumber;
+    private String status;
     private LocalDateTime allocatedAt;
-    private List<StudentProfileDto> roommates;
+    private List<UserProfileDto> roommates;
 }
