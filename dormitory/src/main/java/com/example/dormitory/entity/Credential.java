@@ -5,10 +5,12 @@ package com.example.dormitory.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "credentials")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

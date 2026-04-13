@@ -2,11 +2,13 @@ package com.example.dormitory.entity;
 
 import com.example.dormitory.enums.RequestPreferenceStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(name = "request_preferences")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
