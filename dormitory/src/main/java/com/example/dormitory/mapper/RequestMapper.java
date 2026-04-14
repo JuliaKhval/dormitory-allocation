@@ -5,8 +5,9 @@ import com.example.dormitory.entity.Request;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {AllocationMapper.class})
+@Mapper(componentModel = "spring", uses = {RequestPreferenceMapper.class, AllocationMapper.class})
 public interface RequestMapper {
+
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userName", source = "user.fullName")
     @Mapping(target = "preferences", source = "preferences")
