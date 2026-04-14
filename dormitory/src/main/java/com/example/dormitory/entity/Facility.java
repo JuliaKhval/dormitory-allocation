@@ -1,10 +1,7 @@
 package com.example.dormitory.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "facilities")
@@ -12,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 public class Facility {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

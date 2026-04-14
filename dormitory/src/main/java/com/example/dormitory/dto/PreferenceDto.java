@@ -4,7 +4,7 @@ import com.example.dormitory.enums.RequestPreferenceStatus;
 import lombok.Data;
 
 @Data
-class PreferenceDto {
+public class PreferenceDto {
     private Long preferredUserId;
     private String preferredUserName;
     private RequestPreferenceStatus status;

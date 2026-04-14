@@ -2,15 +2,15 @@ package com.example.dormitory.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "faculties")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Faculty {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

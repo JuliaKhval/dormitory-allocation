@@ -2,9 +2,7 @@ package com.example.dormitory.entity;
 
 import com.example.dormitory.enums.RoomType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +11,8 @@ import java.util.List;
 @Table(name = "rooms")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder@Getter
+@Setter
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

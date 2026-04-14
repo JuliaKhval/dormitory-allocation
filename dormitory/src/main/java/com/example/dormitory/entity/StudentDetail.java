@@ -2,9 +2,7 @@ package com.example.dormitory.entity;
 
 import com.example.dormitory.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,6 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class StudentDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,6 +4,7 @@ import com.example.dormitory.enums.AllocationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "allocations")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

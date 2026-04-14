@@ -7,20 +7,26 @@ import com.example.dormitory.entity.Room;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface RoomMapper {
+
     @Mapping(target = "facilities", source = "facilities", qualifiedByName = "facilityNames")
     @Mapping(target = "occupied", ignore = true)
     RoomDto toDto(Room room);
 
-    @Mapping(target = "facilities", ignore = true) //
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "facilities", ignore = true)
     Room toEntity(CreateRoomDto dto);
 
     @Named("facilityNames")
     default List<String> facilityNames(List<Facility> facilities) {
-        return facilities.stream().map(Facility::getName).collect(Collectors.toList());
+        if (facilities == null) return List.of();
+        return facilities.stream()
+                .map(Facility::getName)
+                .collect(Collectors.toList());
     }
 }

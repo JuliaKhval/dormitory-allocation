@@ -7,10 +7,12 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AllocationMapper {
+
     @Mapping(target = "roomId", source = "room.id")
     @Mapping(target = "building", source = "room.building")
     @Mapping(target = "floor", source = "room.floor")
     @Mapping(target = "roomNumber", source = "room.roomNumber")
     @Mapping(target = "status", source = "status")
+    @Mapping(target = "roommates", ignore = true)
     AllocationDto toDto(Allocation allocation);
 }

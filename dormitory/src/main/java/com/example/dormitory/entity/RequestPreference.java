@@ -2,9 +2,7 @@ package com.example.dormitory.entity;
 
 import com.example.dormitory.enums.RequestPreferenceStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
@@ -12,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class RequestPreference {
     @EmbeddedId
     private RequestPreferenceId id;
