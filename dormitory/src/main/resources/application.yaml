@@ -34,3 +34,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   packages-to-scan: com.example.dormitory.controller
+app:
+  jwt:
+    secret: mySuperSecretKeyForJwtGenerationThatIsAtLeast32BytesLong
+    expiration-ms: 86400000
