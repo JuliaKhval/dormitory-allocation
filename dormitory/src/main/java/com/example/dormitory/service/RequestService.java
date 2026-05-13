@@ -53,11 +53,11 @@ public class RequestService {
                 throw new RuntimeException("Preferred roommate must be from the same country");
             }
 
-            RequestPreferenceId id = new RequestPreferenceId(userId, prefId, year);
+            // Создаём предпочтение без составного ключа
             RequestPreference pref = RequestPreference.builder()
-                    .id(id)
                     .requester(user)
                     .preferredUser(prefUser)
+                    .year(year)
                     .request(request)
                     .status(RequestPreferenceStatus.PENDING)
                     .build();
@@ -84,5 +84,12 @@ public class RequestService {
         }
         preferenceRepository.deleteAll(preferenceRepository.findByRequestId(requestId));
         requestRepository.delete(request);
+    }
+    public List<RequestDto> getAllRequests(String sortBy) {
+        List<Request> requests = requestRepository.findAllWithUser(); // нужен JOIN FETCH
+        if ("date".equalsIgnoreCase(sortBy)) {
+            requests.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
+        }
+        return requests.stream().map(requestMapper::toDto).collect(Collectors.toList());
     }
 }
