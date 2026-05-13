@@ -1,6 +1,5 @@
 package com.example.dormitory.dto;
 
-import com.example.dormitory.enums.RequestPreferenceStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.List;
 public class RequestDto {
     private Long id;
     private Long userId;
+    private String userName;
     private LocalDateTime createdAt;
     private Integer year;
     private List<PreferenceDto> preferences;
