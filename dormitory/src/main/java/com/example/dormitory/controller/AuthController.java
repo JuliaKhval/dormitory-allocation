@@ -20,6 +20,6 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Вход в систему")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+        return ResponseEntity.ok(authService.login(request));
     }
 }
