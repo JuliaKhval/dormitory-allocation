@@ -1,7 +1,13 @@
 spring:
   application:
     name: dormitory-allocation
-
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+      static-locations: classpath:/META-INF/resources/webjars/,classpath:/static/
   datasource:
     url: jdbc:postgresql://localhost:5432/dormitory_db
     username: postgres
@@ -38,3 +44,4 @@ app:
   jwt:
     secret: mySuperSecretKeyForJwtGenerationThatIsAtLeast32BytesLong
     expiration-ms: 86400000
+
