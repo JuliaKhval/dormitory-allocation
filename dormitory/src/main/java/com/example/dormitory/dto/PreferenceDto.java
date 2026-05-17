@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class PreferenceDto {
+    private Long id;
     private Long preferredUserId;
     private String preferredUserName;
     private RequestPreferenceStatus status;
