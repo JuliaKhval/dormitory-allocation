@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Вход в систему</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">Авторизация</div>
+                <div class="card-body">
+                    <div id="errorAlert" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" id="email" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>Пароль</label>
+                        <input type="password" id="password" class="form-control">
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary w-100">Войти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Если уже есть токен, сразу переходим на дашборд
+        if (localStorage.getItem('jwtToken')) {
+            window.location.href = '/dashboard';
+        }
+
+        $('#loginBtn').click(function() {
+            const email = $('#email').val();
+            const password = $('#password').val();
+            $.ajax({
+                url: '/api/v1/auth/login',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: email, password: password }),
+                success: function(response) {
+                    localStorage.setItem('jwtToken', response.token);
+                    localStorage.setItem('userId', response.userId);
+                    localStorage.setItem('userRole', response.role);
+                    window.location.href = '/dashboard';
+                },
+                error: function(xhr) {
+                    $('#errorAlert').removeClass('d-none').text('Неверный email или пароль');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
