@@ -9,18 +9,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class CompatibilityService {
-
     public boolean isCompatible(StudentDetail student, Room room,
                                 List<StudentDetail> currentOccupants,
                                 List<User> approvedRoommates) {
-        // 1. Пол
+        // Пол
         if (room.getType() == RoomType.MALE && student.getGender() != Gender.MALE) return false;
         if (room.getType() == RoomType.FEMALE && student.getGender() != Gender.FEMALE) return false;
 
-        // 2. Вместимость
+        // Вместимость
         if (room.getCapacity() <= currentOccupants.size()) return false;
 
-        // 3. Страна
+        // Страна
         if (!currentOccupants.isEmpty()) {
             String firstCountry = currentOccupants.get(0).getCountry().getName();
             if (!student.getCountry().getName().equals(firstCountry)) return false;
@@ -29,7 +28,7 @@ public class CompatibilityService {
             }
         }
 
-        // 4. Одобренные соседи
+        // Одобренные соседи
         if (approvedRoommates != null && !approvedRoommates.isEmpty()) {
             List<Long> currentIds = currentOccupants.stream()
                     .map(occ -> occ.getUser().getId())

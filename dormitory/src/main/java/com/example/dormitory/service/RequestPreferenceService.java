@@ -17,6 +17,5 @@ public class RequestPreferenceService {
         RequestPreference pref = preferenceRepository.findById(preferenceId)
                 .orElseThrow(() -> new RuntimeException("Preference not found"));
         pref.setStatus(newStatus);
-        preferenceRepository.save(pref);
     }
 }
