@@ -5,11 +5,9 @@ import com.example.dormitory.entity.RequestPreference;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+
 @Mapper(componentModel = "spring")
 public interface RequestPreferenceMapper {
-
-    @Mapping(target = "preferredUserId", source = "preferredUser.id")
-    @Mapping(target = "preferredUserName", source = "preferredUser.fullName")
-    @Mapping(target = "status", source = "status")
+    @Mapping(target = "id", source = "id")
     PreferenceDto toDto(RequestPreference preference);
 }
