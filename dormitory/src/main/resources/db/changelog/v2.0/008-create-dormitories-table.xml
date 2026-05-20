@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="008-create-dormitories-table" author="Julia Khval">
+        <createTable tableName="dormitories">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="warden_user_id" type="BIGINT"/>
+
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_dormitories_warden"
+                                 baseTableName="dormitories"
+                                 baseColumnNames="warden_user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+
+        <addUniqueConstraint tableName="dormitories" columnNames="warden_user_id" constraintName="uq_dormitories_warden"/>
+
+    </changeSet>
+</databaseChangeLog>

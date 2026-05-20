@@ -10,4 +10,6 @@
     <include file="v2.0/005-create-rooms-facilities.xml" relativeToChangelogFile="true"/>
     <include file="v2.0/006-create-requests-preferences.xml" relativeToChangelogFile="true"/>
     <include file="v2.0/007-create-allocations.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/008-create-dormitories-table.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/009-add-dormitorie-relations.xml" relativeToChangelogFile="true"/>
         </databaseChangeLog>

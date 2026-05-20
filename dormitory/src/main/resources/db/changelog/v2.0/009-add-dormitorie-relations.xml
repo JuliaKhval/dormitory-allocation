@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet id="009-add-dormitorie-relations" author="Julia Khval">
+
+        <insert tableName="dormitories">
+            <column name="name" value="Общежитие №1"/>
+            <column name="address" value="ул. Социалистическая,25"/>
+        </insert>
+        <insert tableName="dormitories">
+            <column name="name" value="Общежитие №2"/>
+            <column name="address" value="ул. Лиможа, 23\1"/>
+        </insert>
+        <insert tableName="dormitories">
+            <column name="name" value="Общежитие №3"/>
+            <column name="address" value="ул. Горького, 3"/>
+        </insert>
+
+        <addColumn tableName="rooms">
+            <column name="dormitory_id" type="BIGINT"/>
+        </addColumn>
+
+
+
+        <addNotNullConstraint tableName="rooms" columnName="dormitory_id" columnDataType="BIGINT"/>
+        <addForeignKeyConstraint constraintName="fk_rooms_dormitory"
+                                 baseTableName="rooms"
+                                 baseColumnNames="dormitory_id"
+                                 referencedTableName="dormitories"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+
+
+        <dropColumn tableName="rooms" columnName="building"/>
+
+
+        <addColumn tableName="users">
+            <column name="dormitory_id" type="BIGINT"/>
+        </addColumn>
+
+
+        <addForeignKeyConstraint constraintName="fk_users_dormitory"
+                                 baseTableName="users"
+                                 baseColumnNames="dormitory_id"
+                                 referencedTableName="dormitories"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+
+    </changeSet>
+</databaseChangeLog>
