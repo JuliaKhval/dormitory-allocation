@@ -6,11 +6,12 @@ import java.util.List;
 @Data
 public class RoomDto {
     private Long id;
-    private String building;
+    private String dormitoryName;
     private Integer floor;
     private String roomNumber;
     private Integer capacity;
     private String type;
     private List<String> facilities;
     private Integer occupied;
+    private List<UserProfileDto> roommates; // текущие жильцы
 }

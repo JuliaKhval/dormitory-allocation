@@ -11,6 +11,7 @@ public class RequestDto {
     private String userName;
     private LocalDateTime createdAt;
     private Integer year;
+    private String requestStatus;
     private List<PreferenceDto> preferences;
     private AllocationDto allocation;
 }

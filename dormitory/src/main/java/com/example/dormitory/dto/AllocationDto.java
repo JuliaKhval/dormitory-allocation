@@ -8,7 +8,7 @@ import java.util.List;
 public class AllocationDto {
     private Long id;
     private Long roomId;
-    private String building;
+    private String dormitoryName;
     private Integer floor;
     private String roomNumber;
     private String status;

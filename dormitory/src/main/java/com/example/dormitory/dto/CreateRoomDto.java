@@ -5,7 +5,7 @@ import java.util.List;
 
 @Data
 public class CreateRoomDto {
-    private String building;
+    private Long dormitoryId;
     private Integer floor;
     private String roomNumber;
     private Integer capacity;
