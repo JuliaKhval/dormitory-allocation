@@ -10,14 +10,18 @@ import org.mapstruct.Named;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Mapper(componentModel = "spring")
 public interface RoomMapper {
 
+    @Mapping(target = "dormitoryName", source = "room.dormitory.name")
     @Mapping(target = "facilities", source = "room.facilities", qualifiedByName = "facilityNames")
     @Mapping(target = "occupied", source = "occupied")
+    @Mapping(target = "roommates", ignore = true)
     RoomDto toDto(Room room, Integer occupied);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "dormitory", ignore = true)
     @Mapping(target = "facilities", ignore = true)
     Room toEntity(CreateRoomDto dto);
 

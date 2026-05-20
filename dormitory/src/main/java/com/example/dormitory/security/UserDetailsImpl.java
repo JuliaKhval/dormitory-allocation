@@ -13,10 +13,14 @@ import java.util.stream.Collectors;
 public class UserDetailsImpl implements UserDetails {
 
     private final User user;
+    private final Long dormitoryId;
 
-    public UserDetailsImpl(User user) {
+    public UserDetailsImpl(User user, Long dormitoryId) {
         this.user = user;
+        this.dormitoryId = dormitoryId;
     }
+
+    public Long getDormitoryId() { return dormitoryId; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

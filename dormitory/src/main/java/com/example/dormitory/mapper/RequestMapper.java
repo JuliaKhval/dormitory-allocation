@@ -12,5 +12,6 @@ public interface RequestMapper {
     @Mapping(target = "userName", source = "user.fullName")
     @Mapping(target = "preferences", source = "preferences")
     @Mapping(target = "allocation", source = "allocation")
+    @Mapping(target = "requestStatus", ignore = true)
     RequestDto toDto(Request request);
 }

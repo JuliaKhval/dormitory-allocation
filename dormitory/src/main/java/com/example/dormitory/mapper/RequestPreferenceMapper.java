@@ -9,5 +9,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface RequestPreferenceMapper {
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "preferredUserId", source = "preferredUser.id")
+    @Mapping(target = "preferredUserName", source = "preferredUser.fullName")
     PreferenceDto toDto(RequestPreference preference);
 }
