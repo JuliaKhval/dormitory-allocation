@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PriorityService {
-
     public double calculatePriority(StudentDetail student) {
         double priority = student.getAverageScore().doubleValue();
         if (student.getBenefits() != null && !student.getBenefits().isEmpty()) {

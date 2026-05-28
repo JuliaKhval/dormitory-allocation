@@ -47,34 +47,37 @@ public class RequestService {
         request = requestRepository.save(request);
 
         List<Long> preferredIds = dto.getPreferredUserIds();
-        if (preferredIds.size() > 3) throw new RuntimeException("At most 3 preferred roommates");
+        if (preferredIds != null && preferredIds.size() > 3)
+            throw new RuntimeException("At most 3 preferred roommates");
 
-        RequestPreference pref = null;
-        for (Long prefId : preferredIds) {
-            User prefUser = userRepository.findById(prefId)
-                    .orElseThrow(() -> new RuntimeException("Preferred user not found"));
-            StudentDetail prefStudent = prefUser.getStudentDetail();
-            if (prefStudent == null) throw new RuntimeException("Preferred user is not a student");
-            if (prefId.equals(userId)) {
-                throw new RuntimeException("You cannot select yourself as a roommate");
-            }
-            if (!prefStudent.getCountry().getId().equals(student.getCountry().getId())) {
-                throw new RuntimeException("Preferred roommate must be from the same country");
-            }
+        // Обрабатываем предпочтения, только если они есть
+        if (preferredIds != null && !preferredIds.isEmpty()) {
+            for (Long prefId : preferredIds) {
+                User prefUser = userRepository.findById(prefId)
+                        .orElseThrow(() -> new RuntimeException("Preferred user not found"));
+                StudentDetail prefStudent = prefUser.getStudentDetail();
+                if (prefStudent == null)
+                    throw new RuntimeException("Preferred user is not a student");
+                if (prefId.equals(userId))
+                    throw new RuntimeException("You cannot select yourself as a roommate");
+                if (!prefStudent.getCountry().getId().equals(student.getCountry().getId()))
+                    throw new RuntimeException("Preferred roommate must be from the same country");
 
-            pref = RequestPreference.builder()
-                    .requester(user)
-                    .preferredUser(prefUser)
-                    .year(year)
-                    .request(request)
-                    .status(RequestPreferenceStatus.PENDING)
-                    .build();
-            preferenceRepository.save(pref);
+                RequestPreference pref = RequestPreference.builder()
+                        .requester(user)
+                        .preferredUser(prefUser)
+                        .year(year)
+                        .request(request)
+                        .status(RequestPreferenceStatus.PENDING)
+                        .build();
+                preferenceRepository.save(pref);
+                // Вызываем проверку для КАЖДОГО созданного предпочтения
+                preferenceService.checkAndConfirmMutual(pref);
+            }
         }
-        preferenceService.checkAndConfirmMutual(pref);
+
         return requestMapper.toDto(request);
     }
-
     public List<RequestDto> getUserRequests(Long userId) {
         return requestRepository.findByUserId(userId).stream()
                 .map(req -> {
