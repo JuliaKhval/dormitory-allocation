@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Панель управления</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <style>
+        .list-group-item-action { cursor: pointer; }
+        .navbar-nav .nav-link { cursor: pointer; }
+        .badge { padding: 5px 10px; border-radius: 4px; color: white; }
+        .bg-warning { background-color: #ffc107; color: black; }
+        .bg-success { background-color: #28a745; }
+        .bg-danger { background-color: #dc3545; }
+        .bg-info { background-color: #17a2b3; }
+        .room-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .room-card { width: 100px; height: 100px; border: 1px solid #ccc; border-radius: 8px; text-align: center; padding: 5px; cursor: pointer; transition: 0.2s; }
+        .room-free { background-color: #c8e6c9; }
+        .room-partial { background-color: #fff9c4; }
+        .room-occupied { background-color: #ffcdd2; }
+        .room-card:hover { transform: scale(1.05); }
+        .room-number { font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">Расселение студентов</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto" id="menuItems"></ul>
+            <button id="logoutBtn" class="btn btn-outline-light">Выйти</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div id="content"></div>
+</div>
+
+<script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    // -------------------- AJAX with JWT --------------------
+    function apiRequest(url, method, data, successCallback, errorCallback) {
+        const token = localStorage.getItem('jwtToken');
+        console.log('Token:', token); // ДОБАВИТЬ
+        console.log('Request:', method, url); // ДОБАВИТЬ
+        if (!token && url !== '/api/v1/auth/login') {
+            console.error('No token found, redirecting to login');
+            window.location.href = '/login';
+            return;
+        }
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            headers: { 'Authorization': 'Bearer ' + token },
+            data: data ? JSON.stringify(data) : undefined,
+            success: successCallback,
+            error: function(xhr) {
+                console.error('Request failed:', url, xhr.status, xhr.statusText); // ДОБАВИТЬ
+                if (xhr.status === 401 || xhr.status === 403) {
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userRole');
+                    window.location.href = '/login';
+                } else {
+                    if (errorCallback) errorCallback(xhr);
+                    else console.error('API error', xhr);
+                }
+            }
+        });
+    }
+
+    function apiRequestPromise(url, method, data) {
+        return new Promise((resolve, reject) => {
+            apiRequest(url, method, data, resolve, reject);
+        });
+    }
+
+    // -------------------- Глобальные переменные для студента --------------------
+    let selectedRoommates = [];
+    let allStudents = [];
+
+    // -------------------- Главная загрузка --------------------
+    function loadDashboard() {
+        const role = localStorage.getItem('userRole');
+        if (!role) {
+            window.location.href = '/login';
+            return;
+        }
+
+        let menuHtml = '';
+        if (role === 'STUDENT') {
+            menuHtml = `
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadStudentProfile()">Мой профиль</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadMyRequests()">Мои заявки</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showCreateRequestForm()">Подать заявку</a></li>
+            `;
+        } else if (role === 'WARDEN') {
+            menuHtml = `
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadRooms()">Комнаты (таблица)</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadRoomsVisual()">План комнат</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadAllRequests()">Все заявки</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="runAllocation()">Запустить распределение</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadStats()">Статистика</a></li>
+            `;
+        } else if (role === 'ADMIN') {
+            menuHtml = `
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadAllUsers()">Пользователи</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showCreateUserForm()">Создать пользователя</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadRooms()">Комнаты (таблица)</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadRoomsVisual()">План комнат</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadStats()">Статистика</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="generateTestData()">Сгенерировать тестовые данные</a></li>
+            `;
+        }
+        $('#menuItems').html(menuHtml);
+        if (role === 'STUDENT') loadStudentProfile();
+        else loadCommonProfile();
+    }
+
+    // -------------------- Профиль студента --------------------
+    function loadStudentProfile() {
+        apiRequest('/api/v1/students/me', 'GET', null, function(student) {
+            $('#content').html(`
+                <div class="card">
+                    <div class="card-header">Мой профиль (студент)</div>
+                    <div class="card-body">
+                        <p><strong>ФИО:</strong> ${student.fullName}</p>
+                        <p><strong>Email:</strong> ${student.email}</p>
+                        <p><strong>Факультет:</strong> ${student.faculty}</p>
+                        <p><strong>Группа:</strong> ${student.groupName}</p>
+                        <p><strong>Курс:</strong> ${student.course}</p>
+                        <p><strong>Пол:</strong> ${student.gender}</p>
+                        <p><strong>Страна:</strong> ${student.country}</p>
+                        <p><strong>Средний балл:</strong> ${student.averageScore}</p>
+                        <p><strong>Телефон:</strong> ${student.phoneNumber || 'не указан'}</p>
+                        <p><strong>Льготы:</strong> ${student.benefits.join(', ') || 'нет'}</p>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    // -------------------- Общий профиль (админ/комендант) --------------------
+    function loadCommonProfile() {
+        apiRequest('/api/v1/users/profile', 'GET', null, function(user) {
+            $('#content').html(`
+                <div class="card">
+                    <div class="card-header">Мой профиль</div>
+                    <div class="card-body">
+                        <p><strong>ID:</strong> ${user.id}</p>
+                        <p><strong>ФИО:</strong> ${user.fullName}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Роли:</strong> ${user.roles.join(', ')}</p>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    // -------------------- СТУДЕНТ: заявки --------------------
+    function loadMyRequests() {
+        apiRequest('/api/v1/requests/my', 'GET', null, function(requests) {
+            if (!requests || requests.length === 0) {
+                $('#content').html('<div class="alert alert-info">У вас нет заявок.</div>');
+                return;
+            }
+            let html = '<h3>Мои заявки</h3><table class="table"><thead><tr><th>ID</th><th>Дата</th><th>Предпочтения (соседи)</th><th>Результат</th><th>Действия</th></tr></thead><tbody>';
+            requests.forEach(r => {
+                let prefsHtml = r.preferences.map(p =>
+                    `<div>${p.preferredUserName}
+                    <span class="badge ${p.status === 'APPROVED' ? 'bg-success' : (p.status === 'REJECTED' ? 'bg-danger' : 'bg-warning')}">
+                        ${p.status}
+                    </span>
+                </div>`
+                ).join('');
+                let resultHtml = r.allocation ? `Комната: ${r.allocation.building} ${r.allocation.floor} этаж, №${r.allocation.roomNumber}` : '—';
+                html += `<tr>
+                        <td>${r.id}</td>
+                        <td>${new Date(r.createdAt).toLocaleString()}</td>
+                        <td>${prefsHtml}</td>
+                        <td>${resultHtml}</td>
+                        <td>${r.allocation ? '' : `<button class="btn btn-sm btn-danger" onclick="cancelRequest(${r.id})">Отменить</button>`}</td>
+                     </tr>`;
+            });
+            html += '</tbody><tr>';
+            $('#content').html(html);
+        });
+    }
+
+    function cancelRequest(requestId) {
+        apiRequest(`/api/v1/requests/${requestId}`, 'DELETE', null, function() {
+            alert('Заявка отменена');
+            loadMyRequests();
+        });
+    }
+
+    // -------------------- СТУДЕНТ: создание заявки (с выбором нескольких соседей) --------------------
+    function showCreateRequestForm() {
+        selectedRoommates = [];
+        const userId = localStorage.getItem('userId');
+        apiRequest('/api/v1/students/list', 'GET', null, function(students) {
+            allStudents = students.filter(s => s.id != userId);
+            renderStudentSelectionList(allStudents);
+        });
+    }
+
+    function renderStudentSelectionList(students, filter = '') {
+        const filtered = students.filter(s => s.fullName.toLowerCase().includes(filter.toLowerCase()));
+        let listHtml = '';
+        filtered.forEach(s => {
+            const isSelected = selectedRoommates.some(r => r.id === s.id);
+            listHtml += `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    ${s.fullName}
+                    <button class="btn btn-sm ${isSelected ? 'btn-secondary' : 'btn-primary'}"
+                            onclick="${isSelected ? `removeRoommate(${s.id})` : `addRoommate(${s.id}, '${s.fullName.replace(/'/g, "\\'")}')`}">
+                        ${isSelected ? 'Удалить' : 'Добавить'}
+                    </button>
+                </div>
+            `;
+        });
+        const selectedHtml = selectedRoommates.map(r => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                ${r.fullName}
+                <button class="btn btn-sm btn-danger" onclick="removeRoommate(${r.id})">Удалить</button>
+            </li>
+        `).join('');
+        const contentHtml = `
+            <div class="card">
+                <div class="card-header">Создание заявки</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label>Поиск студентов</label>
+                        <input type="text" id="searchStudentInput" class="form-control" placeholder="Введите имя...">
+                        <div id="studentList" class="list-group mt-2" style="max-height: 300px; overflow-y: auto;">${listHtml}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Выбранные соседи (макс. 3)</label>
+                        <ul id="selectedRoommatesList" class="list-group">${selectedHtml}</ul>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitRequest()">Подать заявку</button>
+                </div>
+            </div>
+        `;
+        $('#content').html(contentHtml);
+        $('#searchStudentInput').off('input').on('input', function() {
+            renderStudentSelectionList(allStudents, $(this).val());
+        });
+    }
+
+    function addRoommate(id, fullName) {
+        if (selectedRoommates.length >= 3) {
+            alert('Нельзя выбрать больше 3 соседей');
+            return;
+        }
+        if (!selectedRoommates.some(r => r.id === id)) {
+            selectedRoommates.push({ id, fullName });
+            refreshStudentLists();
+        }
+    }
+
+    function removeRoommate(id) {
+        selectedRoommates = selectedRoommates.filter(r => r.id !== id);
+        refreshStudentLists();
+    }
+
+    function refreshStudentLists() {
+        const filterValue = $('#searchStudentInput').val();
+        renderStudentSelectionList(allStudents, filterValue);
+    }
+
+    function submitRequest() {
+        const preferredUserIds = selectedRoommates.map(r => r.id);
+        if (preferredUserIds.length > 3) {
+            alert('Нельзя выбрать больше 3 соседей');
+            return;
+        }
+        const data = { preferredUserIds: preferredUserIds };
+        apiRequest('/api/v1/requests', 'POST', data,
+            () => { alert('Заявка создана'); loadMyRequests(); },
+            (xhr) => alert('Ошибка: ' + (xhr.responseJSON?.message || 'Не удалось создать заявку'))
+        );
+    }
+
+    // -------------------- КОМНАТЫ (таблица) --------------------
+    function loadRooms() {
+        apiRequest('/api/v1/rooms', 'GET', null, function(rooms) {
+            let html = '<h3>Комнаты</h3><table class="table">';
+            html += '<thead><tr><th>Корпус</th><th>Этаж</th><th>№</th><th>Вместимость</th><th>Тип</th><th>Занято</th><th>Удобства</th><th></th></tr></thead><tbody>';
+            rooms.forEach(r => {
+                html += `<tr>
+                            <td>${r.building}</td>
+                            <td>${r.floor}</td>
+                            <td>${r.roomNumber}</td>
+                            <td>${r.capacity}</td>
+                            <td>${r.type}</td>
+                            <td>${r.occupied}</td>
+                            <td>${r.facilities.join(', ')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" onclick="showEditRoomForm(${JSON.stringify(r).replace(/"/g, '&quot;')})">Ред.</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRoom(${r.id})">Удалить</button>
+                            </td>
+                         </tr>`;
+            });
+            html += '</tbody><tr><button class="btn btn-success" onclick="showCreateRoomForm()">Добавить комнату</button>';
+            $('#content').html(html);
+        });
+    }
+
+
+
+    function deleteRoom(roomId) {
+        if (confirm('Удалить комнату?')) {
+            apiRequest(`/api/v1/rooms/${roomId}`, 'DELETE', null, () => loadRooms());
+        }
+    }
+
+    function showCreateRoomForm() {
+        Promise.all([
+            apiRequestPromise('/api/v1/admin/dormitories', 'GET'),
+            apiRequestPromise('/api/v1/admin/facilities', 'GET')
+        ]).then(([dormitories, facilities]) => {
+            let dormOptions = dormitories.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            let facilityCheckboxes = facilities.map(f => `<div class="form-check"><input class="form-check-input" type="checkbox" value="${f.id}" id="facility_${f.id}"> <label class="form-check-label" for="facility_${f.id}">${f.name}</label></div>`).join('');
+            $('#content').html(`
+            <div class="card">
+                <div class="card-header">Новая комната</div>
+                <div class="card-body">
+                    <div class="mb-2">Общежитие: <select id="dormitoryId" class="form-control">${dormOptions}</select></div>
+                    <div class="mb-2">Номер комнаты (например, 303А): <input type="text" id="roomNumber" class="form-control" placeholder="303А"></div>
+                    <div class="mb-2">Этаж: <input type="number" id="floor" class="form-control"></div>
+                    <div class="mb-2">Вместимость: <input type="number" id="capacity" class="form-control"></div>
+                    <div class="mb-2">Тип:
+                        <select id="type" class="form-control">
+                            <option value="UNDEFINED">Не определён (будет установлен после заселения)</option>
+                            <option value="MALE">Мужская</option>
+                            <option value="FEMALE">Женская</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">Удобства: <div id="facilitiesGroup">${facilityCheckboxes}</div></div>
+                    <button class="btn btn-primary" onclick="createRoom()">Создать</button>
+                </div>
+            </div>
+        `);
+        }).catch(err => alert('Ошибка загрузки справочников'));
+    }
+
+    function createRoom() {
+        const selectedFacilities = [];
+        $('#facilitiesGroup input:checked').each(function() {
+            selectedFacilities.push($(this).val());
+        });
+        const data = {
+            dormitoryId: parseInt($('#dormitoryId').val()),
+            roomNumber: $('#roomNumber').val(),
+            floor: parseInt($('#floor').val()),
+            capacity: parseInt($('#capacity').val()),
+            type: $('#type').val(),
+            facilities: selectedFacilities
+        };
+        apiRequest('/api/v1/rooms', 'POST', data, function() {
+            alert('Комната создана');
+            loadRooms();
+        });
+    }
+
+    function showEditRoomForm(room) {
+        $('#content').html(`
+            <div class="card">
+                <div class="card-header">Редактирование комнаты ${room.roomNumber}</div>
+                <div class="card-body">
+                    <input type="hidden" id="roomId" value="${room.id}">
+                    <div class="mb-2">Общежитие: <select id="editDormitoryId" class="form-control"></select></div>
+                    <div class="mb-2">Номер комнаты: <input type="text" id="editRoomNumber" value="${room.roomNumber}" class="form-control"></div>
+                    <div class="mb-2">Этаж: <input type="number" id="editFloor" value="${room.floor}" class="form-control"></div>
+                    <div class="mb-2">Вместимость: <input type="number" id="editCapacity" value="${room.capacity}" class="form-control"></div>
+                    <div class="mb-2">Тип:
+                        <select id="editType" class="form-control">
+                            <option value="UNDEFINED" ${room.type === 'UNDEFINED' ? 'selected' : ''}>Не определён</option>
+                            <option value="MALE" ${room.type === 'MALE' ? 'selected' : ''}>Мужская</option>
+                            <option value="FEMALE" ${room.type === 'FEMALE' ? 'selected' : ''}>Женская</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">Удобства: <div id="editFacilitiesContainer"></div></div>
+                    <button class="btn btn-primary" onclick="updateRoom()">Обновить</button>
+                </div>
+            </div>
+        `);
+        Promise.all([
+            apiRequestPromise('/api/v1/admin/dormitories', 'GET'),
+            apiRequestPromise('/api/v1/admin/facilities', 'GET')
+        ]).then(([dormitories, facilities]) => {
+            let dormOptions = dormitories.map(d => `<option value="${d.id}" ${room.dormitoryId == d.id ? 'selected' : ''}>${d.name}</option>`).join('');
+            $('#editDormitoryId').html(dormOptions);
+            let facilityHtml = facilities.map(f => `<div class="form-check"><input class="form-check-input" type="checkbox" value="${f.id}" id="edit_facility_${f.id}" ${room.facilities.includes(f.name) ? 'checked' : ''}> <label class="form-check-label" for="edit_facility_${f.id}">${f.name}</label></div>`).join('');
+            $('#editFacilitiesContainer').html(facilityHtml);
+        });
+    }
+
+    function updateRoom() {
+        const id = $('#roomId').val();
+        const selectedFacilities = [];
+        $('#editFacilitiesContainer input:checked').each(function() {
+            selectedFacilities.push($(this).val());
+        });
+        const data = {
+            dormitoryId: parseInt($('#editDormitoryId').val()),
+            roomNumber: $('#editRoomNumber').val(),
+            floor: parseInt($('#editFloor').val()),
+            capacity: parseInt($('#editCapacity').val()),
+            type: $('#editType').val(),
+            facilities: selectedFacilities
+        };
+        apiRequest(`/api/v1/rooms/${id}`, 'PUT', data, () => { alert('Комната обновлена'); loadRooms(); });
+    }
+
+    // -------------------- План комнат (визуальный) --------------------
+    function loadRoomsVisual() {
+        apiRequest('/api/v1/rooms', 'GET', null, function(rooms) {
+            let dormitories = {};
+            rooms.forEach(room => {
+                const dormName = room.dormitoryName || 'Неизвестное общежитие';
+                if (!dormitories[dormName]) dormitories[dormName] = {};
+                const floor = room.floor;
+                if (!dormitories[dormName][floor]) dormitories[dormName][floor] = [];
+                dormitories[dormName][floor].push(room);
+            });
+            let html = '<h3>План комнат</h3>';
+            for (let dormName in dormitories) {
+                html += `<h4>${dormName}</h4>`;
+                for (let floor in dormitories[dormName]) {
+                    html += `<h5>Этаж ${floor}</h5><div class="room-grid">`;
+                    dormitories[dormName][floor].forEach(room => {
+                        let statusClass = '';
+                        if (room.occupied === 0) statusClass = 'room-free';
+                        else if (room.occupied === room.capacity) statusClass = 'room-occupied';
+                        else if (room.occupied > 0) statusClass = 'room-partial';
+                        html += `<div class="room-card ${statusClass}" data-room-id="${room.id}" onclick="showRoomDetails(${room.id})">
+                                <div class="room-number">${room.roomNumber}</div>
+                                <div class="room-capacity">${room.occupied}/${room.capacity}</div>
+                            </div>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+            $('#content').html(html);
+        });
+    }
+
+    function showRoomDetails(roomId) {
+        apiRequest(`/api/v1/rooms/${roomId}`, 'GET', null, function(room) {
+            apiRequest('/api/v1/warden/students-to-allocate', 'GET', null, function(students) {
+                let studentOptions = '<option value="">-- Выберите студента --</option>';
+                students.forEach(s => {
+                    studentOptions += `<option value="${s.id}">${s.fullName} (рейтинг: ${s.averageScore})</option>`;
+                });
+                let roomTypeLocalized = room.type === 'MALE' ? 'Мужская' : (room.type === 'FEMALE' ? 'Женская' : 'Не определена');
+                let residentsHtml = '<ul class="list-group">';
+                if (room.roommates && room.roommates.length) {
+                    room.roommates.forEach(r => {
+                        residentsHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                            ${r.fullName}
+                                            <button class="btn btn-sm btn-danger" onclick="evictStudent(${r.allocationId})">Выселить</button>
+                                          </li>`;
+                    });
+                } else {
+                    residentsHtml += '<li class="list-group-item">Нет жильцов</li>';
+                }
+                residentsHtml += '</ul>';
+
+                let modalHtml = `
+                    <div class="modal fade" id="roomModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5>Комната ${room.roomNumber}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Общежитие: ${room.dormitoryName}, этаж: ${room.floor}</p>
+                                    <p>Вместимость: ${room.capacity}, занято: ${room.occupied}</p>
+
+                                    <p>Тип: ${roomTypeLocalized}</p>
+                                    <p>Удобства: ${room.facilities ? room.facilities.join(', ') : 'нет'}</p>
+                                    <hr>
+                                    <h6>Текущие жильцы</h6>
+                                    ${residentsHtml}
+                                    <hr>
+                                    <h6>Заселить студента</h6>
+                                    <select id="allocateStudentId" class="form-control">${studentOptions}</select>
+                                    <button class="btn btn-primary mt-2" onclick="manualAllocateToRoom(${room.id})">Заселить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(modalHtml);
+                $('#roomModal').modal('show');
+                $('#roomModal').on('hidden.bs.modal', function() { $('#roomModal').remove(); });
+            }).catch(() => alert('Не удалось загрузить список студентов для заселения'));
+        }).catch(() => alert('Не удалось загрузить информацию о комнате'));
+    }
+
+    function evictStudent(allocationId) {
+        console.log('Sending DELETE request to', `/api/v1/warden/allocations/${allocationId}`);
+        if (confirm('Выселить студента из комнаты?')) {
+            apiRequest(`/api/v1/warden/allocations/${allocationId}`, 'DELETE', null, function() {
+                alert('Студент выселен');
+                $('#roomModal').modal('hide');
+                loadRoomsVisual();
+            });
+        }
+    }
+
+    function manualAllocateToRoom(roomId) {
+
+        const studentId = $('#allocateStudentId').val();
+        console.log('Sending request to', `/api/v1/allocations/manual?studentId=${studentId}&roomId=${roomId}`); // ДОБАВИТЬ
+        if (!studentId) { alert('Выберите студента'); return; }
+        apiRequest(`/api/v1/allocations/manual?studentId=${studentId}&roomId=${roomId}`, 'POST', null,
+            () => { alert('Студент заселён'); $('#roomModal').modal('hide'); loadRoomsVisual(); },
+            (xhr) => alert('Ошибка: ' + (xhr.responseJSON?.message || 'Не удалось заселить'))
+        );
+    }
+
+    // -------------------- ВСЕ ЗАЯВКИ (комендант) --------------------
+    function loadAllRequests() {
+        apiRequest('/api/v1/requests', 'GET', null, function(requests) {
+            let html = '<h3>Все заявки</h3><table class="table"><thead><tr><th>Студент</th><th>Дата</th><th>Предпочтения</th><th>Новые статусы</th><th>Действия</th></tr></thead><tbody>';
+            requests.forEach(r => {
+                let prefsHtml = '', statusSelects = '';
+                r.preferences.forEach(p => {
+                    prefsHtml += `<div>${p.preferredUserName} <span class="badge bg-secondary">${p.status}</span></div>`;
+                    statusSelects += `<div>${p.preferredUserName}:
+                                        <select data-pref-id="${p.id}" class="pref-status mb-1">
+                                            <option value="PENDING" ${p.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                                            <option value="APPROVED" ${p.status === 'APPROVED' ? 'selected' : ''}>APPROVED</option>
+                                            <option value="REJECTED" ${p.status === 'REJECTED' ? 'selected' : ''}>REJECTED</option>
+                                        </select>
+                                    </div>`;
+                });
+                html += `<tr>
+                            <td>${r.userName}</td>
+                            <td>${new Date(r.createdAt).toLocaleString()}</td>
+                            <td>${prefsHtml}</td>
+                            <td>${statusSelects}</td>
+                            <td><button class="btn btn-sm btn-primary" onclick="savePreferences(${r.id})">Сохранить статусы</button></td>
+                         </tr>`;
+            });
+            html += '</tbody></table>';
+            $('#content').html(html);
+        });
+    }
+
+    function savePreferences(requestId) {
+        const selects = $(`#content table tr:has(button[onclick*="${requestId}"]) select.pref-status`);
+        let promises = [];
+        selects.each(function() {
+            const prefId = $(this).data('pref-id');
+            const newStatus = $(this).val();
+            promises.push(new Promise((resolve, reject) => {
+                apiRequest(`/api/v1/warden/preferences/${prefId}?status=${newStatus}`, 'PUT', null, resolve, reject);
+            }));
+        });
+        Promise.all(promises).then(() => { alert('Статусы обновлены'); loadAllRequests(); })
+            .catch(() => alert('Ошибка при обновлении статусов'));
+    }
+
+    function runAllocation() {
+        apiRequest('/api/v1/allocations/auto', 'POST', null, () => alert('Распределение запущено'));
+    }
+
+    // -------------------- СТАТИСТИКА --------------------
+    function loadStats() {
+        apiRequest('/api/v1/stats', 'GET', null, function(stats) {
+            $('#content').html(`
+                <div class="card">
+                    <div class="card-header">Статистика системы</div>
+                    <div class="card-body">
+                        <p>Всего пользователей: ${stats.totalUsers}</p>
+                        <p>Студентов: ${stats.totalStudents}</p>
+                        <p>Комендантов: ${stats.totalWardens}</p>
+                        <p>Администраторов: ${stats.totalAdmins}</p>
+                        <p>Комнат: ${stats.totalRooms}, занято: ${stats.occupiedRooms}, свободно: ${stats.freeRooms}</p>
+                        <p>Активных заявок: ${stats.activeRequests}</p>
+                        <p>Распределённых заявок: ${stats.allocatedRequests}</p>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    // -------------------- АДМИНИСТРАТОР --------------------
+    function generateTestData() {
+        if (confirm('Сгенерировать 50 случайных студентов и заявок? Это может занять некоторое время.')) {
+            apiRequest('/api/v1/admin/test-data', 'POST', { studentCount: 50 }, function() {
+                alert('Тестовые данные успешно созданы');
+                loadAllUsers();
+            }, () => alert('Ошибка при генерации данных'));
+        }
+    }
+    function assignDormitoryToWarden(userId) {
+        apiRequest('/api/v1/admin/dormitories', 'GET', null, function(dormitories) {
+            let dormOptions = '<option value="">-- Выберите общежитие --</option>';
+            dormitories.forEach(d => {
+                dormOptions += `<option value="${d.id}">${d.name} (${d.address})</option>`;
+            });
+            let modalHtml = `
+            <div class="modal fade" id="assignDormitoryModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Назначить общежитие коменданту</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <select id="dormitorySelect" class="form-control">${dormOptions}</select>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button class="btn btn-primary" onclick="confirmAssignDormitory(${userId})">Назначить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+            $('body').append(modalHtml);
+            $('#assignDormitoryModal').modal('show');
+            $('#assignDormitoryModal').on('hidden.bs.modal', function() { $('#assignDormitoryModal').remove(); });
+        });
+    }
+
+    function confirmAssignDormitory(userId) {
+        const dormitoryId = $('#dormitorySelect').val();
+        if (!dormitoryId) {
+            alert('Выберите общежитие');
+            return;
+        }
+        apiRequest(`/api/v1/admin/dormitories/${dormitoryId}/warden?wardenUserId=${userId}`, 'PUT', null, function() {
+            alert('Общежитие назначено');
+            $('#assignDormitoryModal').modal('hide');
+            loadAllUsers(); // обновить список
+        });
+    }
+    function loadAllUsers() {
+        apiRequest('/api/v1/admin/users', 'GET', null, function(users) {
+            let html = '<h3>Пользователи</h3><table class="table"><thead><tr><th>ID</th><th>ФИО</th><th>Email</th><th>Роли</th><th></th></tr></thead><tbody>';
+            users.forEach(u => {
+                html += `<tr>
+                            <td>${u.id}</td>
+                            <td>${u.fullName}</td>
+                            <td>${u.email}</td>
+                            <td>${u.roles.join(', ')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="showEditRolesForm(${JSON.stringify(u).replace(/"/g, '&quot;')})">Роли</button>
+                                <button class="btn btn-sm btn-secondary me-1" onclick="showEditStudentForm(${u.id})">Ред. студента</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Удалить</button>
+                            </td>
+                         </tr>`;
+            });
+            html += '</tbody></table>';
+            $('#content').html(html);
+            if (u.roles.includes('WARDEN')) {
+                html += `<button class="btn btn-sm btn-info me-1" onclick="assignDormitoryToWarden(${u.id})">Назначить общ.</button>`;
+            }
+        });
+    }
+
+    function showEditRolesForm(user) {
+        $('#content').html(`
+            <div class="card">
+                <div class="card-header">Редактирование ролей: ${user.fullName}</div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label>Роли:</label><br>
+                        <input type="checkbox" value="STUDENT" class="role-checkbox-edit" ${user.roles.includes('STUDENT') ? 'checked' : ''}> STUDENT
+                        <input type="checkbox" value="WARDEN" class="role-checkbox-edit" ${user.roles.includes('WARDEN') ? 'checked' : ''}> WARDEN
+                        <input type="checkbox" value="ADMIN" class="role-checkbox-edit" ${user.roles.includes('ADMIN') ? 'checked' : ''}> ADMIN
+                    </div>
+                    <button class="btn btn-primary" onclick="updateRoles(${user.id})">Сохранить</button>
+                </div>
+            </div>
+        `);
+    }
+
+    function updateRoles(userId) {
+        const roles = $('.role-checkbox-edit:checked').map(function() { return $(this).val(); }).get();
+        apiRequest(`/api/v1/admin/users/${userId}/roles`, 'PUT', roles, () => { alert('Роли обновлены'); loadAllUsers(); });
+    }
+
+    function deleteUser(userId) {
+        if (confirm('Удалить пользователя?')) {
+            apiRequest(`/api/v1/admin/users/${userId}`, 'DELETE', null, () => loadAllUsers());
+        }
+    }
+
+    function showEditStudentForm(userId) {
+        if (!userId) return;
+        apiRequest(`/api/v1/admin/students/${userId}`, 'GET', null, function(student) {
+            Promise.all([
+                apiRequestPromise('/api/v1/admin/groups', 'GET'),
+                apiRequestPromise('/api/v1/admin/countries', 'GET'),
+                apiRequestPromise('/api/v1/admin/benefits', 'GET')
+            ]).then(([groups, countries, benefits]) => {
+                let groupOptions = groups.map(g => `<option value="${g.id}" ${student.groupId == g.id ? 'selected' : ''}>${g.groupName} (${g.faculty.name})</option>`).join('');
+                let countryOptions = countries.map(c => `<option value="${c.id}" ${student.countryId == c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+                let benefitHtml = benefits.map(b => `<div><input type="checkbox" value="${b.id}" ${student.benefits.includes(b.name) ? 'checked' : ''}> ${b.name}</div>`).join('');
+                $('#content').html(`
+                <div class="card">
+                    <div class="card-header">Редактирование студента: ${student.fullName}</div>
+                    <div class="card-body">
+                        <input type="hidden" id="editUserId" value="${userId}">
+                        <div class="mb-2">Группа: <select id="editGroupId">${groupOptions}</select></div>
+                        <div class="mb-2">Курс: <input type="number" id="editCourse" value="${student.course}"></div>
+                        <div class="mb-2">Пол:
+                            <select id="editGender">
+                                <option value="MALE" ${student.gender === 'MALE' ? 'selected' : ''}>Мужской</option>
+                                <option value="FEMALE" ${student.gender === 'FEMALE' ? 'selected' : ''}>Женский</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">Страна: <select id="editCountryId">${countryOptions}</select></div>
+                        <div class="mb-2">Средний балл: <input type="number" step="0.01" id="editAvgScore" value="${student.averageScore}"></div>
+                        <div class="mb-2">Телефон: <input type="text" id="editPhone" value="${student.phoneNumber || ''}"></div>
+                        <div class="mb-2">Льготы: <div id="editBenefits">${benefitHtml}</div></div>
+                        <button class="btn btn-primary" onclick="updateStudent()">Сохранить</button>
+                    </div>
+                </div>
+            `);
+            }).catch(() => alert('Ошибка загрузки справочников'));
+        });
+    }
+
+    function updateStudent() {
+        const userId = $('#editUserId').val();
+        const data = {
+            groupId: parseInt($('#editGroupId').val()),
+            course: parseInt($('#editCourse').val()),
+            gender: $('#editGender').val(),
+            countryId: parseInt($('#editCountryId').val()),
+            averageScore: parseFloat($('#editAvgScore').val()),
+            phoneNumber: $('#editPhone').val(),
+            benefitTypeIds: $('#editBenefits input:checked').map(function() { return parseInt($(this).val()); }).get()
+        };
+        apiRequest(`/api/v1/admin/students/${userId}`, 'PUT', data, () => { alert('Данные обновлены'); loadAllUsers(); });
+    }
+
+    // -------------------- Создание пользователя (админ) --------------------
+    function showCreateUserForm() {
+        Promise.all([
+            apiRequestPromise('/api/v1/admin/groups', 'GET'),
+            apiRequestPromise('/api/v1/admin/countries', 'GET'),
+            apiRequestPromise('/api/v1/admin/benefits', 'GET')
+        ]).then(([groups, countries, benefits]) => {
+            let groupOptions = groups.map(g => `<option value="${g.id}">${g.groupName} (${g.faculty.name}, ${g.course} курс)</option>`).join('');
+            let countryOptions = countries.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            let benefitHtml = benefits.map(b => `<div><input type="checkbox" value="${b.id}"> ${b.name}</div>`).join('');
+            $('#content').html(`
+                <div class="card">
+                    <div class="card-header">Создать пользователя</div>
+                    <div class="card-body">
+                        <input type="text" id="fullName" placeholder="ФИО" class="form-control mb-2">
+                        <input type="email" id="email" placeholder="Email" class="form-control mb-2">
+                        <input type="password" id="password" placeholder="Пароль" class="form-control mb-2">
+                        <div class="mb-2">
+                            <label>Роли:</label><br>
+                            <input type="checkbox" value="STUDENT" class="role-checkbox-create"> STUDENT
+                            <input type="checkbox" value="WARDEN" class="role-checkbox-create"> WARDEN
+                            <input type="checkbox" value="ADMIN" class="role-checkbox-create"> ADMIN
+                        </div>
+                        <div id="studentFieldsCreate" style="display:none;">
+                            <label>Группа:</label>
+                            <select id="groupId" class="form-control mb-2">${groupOptions}</select>
+                            <label>Страна:</label>
+                            <select id="countryId" class="form-control mb-2">${countryOptions}</select>
+                            <select id="gender" class="form-control mb-2">
+                                <option value="MALE">Мужской</option>
+                                <option value="FEMALE">Женский</option>
+                            </select>
+                            <input type="number" step="0.01" id="averageScore" placeholder="Средний балл" class="form-control mb-2">
+                            <input type="text" id="phoneNumber" placeholder="Телефон" class="form-control mb-2">
+                            <label>Льготы:</label>
+                            <div id="benefitsList">${benefitHtml}</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="createUser()">Создать</button>
+                    </div>
+                </div>
+            `);
+            $('.role-checkbox-create').change(function() {
+                if ($('.role-checkbox-create[value="STUDENT"]').is(':checked')) $('#studentFieldsCreate').show();
+                else $('#studentFieldsCreate').hide();
+            });
+        }).catch(() => alert('Не удалось загрузить справочники'));
+    }
+
+    function createUser() {
+        const roles = $('.role-checkbox-create:checked').map(function() { return $(this).val(); }).get();
+        const data = {
+            fullName: $('#fullName').val(),
+            email: $('#email').val(),
+            password: $('#password').val(),
+            roles: roles
+        };
+        if (roles.includes('STUDENT')) {
+            data.groupId = parseInt($('#groupId').val());
+            data.countryId = parseInt($('#countryId').val());
+            data.gender = $('#gender').val();
+            data.averageScore = parseFloat($('#averageScore').val());
+            data.phoneNumber = $('#phoneNumber').val();
+            data.benefitTypeIds = $('#benefitsList input:checked').map(function() { return parseInt($(this).val()); }).get();
+        }
+        apiRequest('/api/v1/admin/users', 'POST', data, () => { alert('Пользователь создан'); loadAllUsers(); });
+    }
+
+    // -------------------- Выход --------------------
+    $('#logoutBtn').click(function() {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userRole');
+        window.location.href = '/login';
+    });
+
+    $(document).ready(function() {
+        loadDashboard();
+    });
+</script>
+</body>
+</html>
