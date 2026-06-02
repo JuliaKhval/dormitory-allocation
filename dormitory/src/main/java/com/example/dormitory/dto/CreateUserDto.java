@@ -9,7 +9,7 @@ public class CreateUserDto {
     private String fullName;
     private String email;
     private String password;
-    private List<String> roles;        // например, ["STUDENT", "WARDEN"]
+    private List<String> roles;
     // поля для студента (если роль STUDENT)
     private Long groupId;
     private Long countryId;

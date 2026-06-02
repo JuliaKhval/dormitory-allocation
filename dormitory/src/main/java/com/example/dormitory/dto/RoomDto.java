@@ -13,5 +13,5 @@ public class RoomDto {
     private String type;
     private List<String> facilities;
     private Integer occupied;
-    private List<UserProfileDto> roommates; // текущие жильцы
+    private List<RoommateInfo> roommates;// текущие жильцы
 }
