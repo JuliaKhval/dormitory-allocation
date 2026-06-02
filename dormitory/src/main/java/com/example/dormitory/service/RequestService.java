@@ -62,6 +62,9 @@ public class RequestService {
                     throw new RuntimeException("You cannot select yourself as a roommate");
                 if (!prefStudent.getCountry().getId().equals(student.getCountry().getId()))
                     throw new RuntimeException("Preferred roommate must be from the same country");
+                if (prefStudent.getGender() != student.getGender()) {
+                    throw new RuntimeException("Preferred roommate must be of the same gender");
+                }
 
                 RequestPreference pref = RequestPreference.builder()
                         .requester(user)

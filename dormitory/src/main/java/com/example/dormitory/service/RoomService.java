@@ -2,7 +2,9 @@ package com.example.dormitory.service;
 
 import com.example.dormitory.dto.CreateRoomDto;
 import com.example.dormitory.dto.RoomDto;
+import com.example.dormitory.dto.RoommateInfo;
 import com.example.dormitory.dto.UserProfileDto;
+import com.example.dormitory.entity.Allocation;
 import com.example.dormitory.entity.Dormitory;
 import com.example.dormitory.entity.Facility;
 import com.example.dormitory.entity.Room;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,7 @@ public class RoomService {
                 .filter(room -> dormitoryId == null || room.getDormitory().getId().equals(dormitoryId))
                 .filter(room -> floor == null || room.getFloor().equals(floor))
                 .filter(room -> type == null || room.getType().name().equalsIgnoreCase(type))
+                .sorted(Comparator.comparing(Room::getId)) // сортировка по id
                 .map(room -> {
                     int occupied = allocationRepository.findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE).size();
                     return roomMapper.toDto(room, occupied);
@@ -108,14 +112,18 @@ public class RoomService {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
         int occupied = allocationRepository.findByRoomIdAndStatus(id, AllocationStatus.ACTIVE).size();
-        // Если нужны соседи для отображения в модальном окне
-        List<UserProfileDto> roommates = allocationRepository
-                .findByRoomIdAndStatus(id, AllocationStatus.ACTIVE)
-                .stream()
-                .map(a -> userMapper.toUserProfileDto(a.getRequest().getUser()))
+
+        List<Allocation> allocations = allocationRepository.findByRoomIdAndStatus(id, AllocationStatus.ACTIVE);
+        List<RoommateInfo> roommates = allocations.stream()
+                .map(a -> new RoommateInfo(
+                        a.getRequest().getUser().getId(),
+                        a.getRequest().getUser().getFullName(),
+                        a.getId()
+                ))
                 .collect(Collectors.toList());
+
         RoomDto dto = roomMapper.toDto(room, occupied);
-        dto.setRoommates(roommates);  // предполагается, что в RoomDto есть поле roommates
+        dto.setRoommates(roommates);
         return dto;
     }
 }
