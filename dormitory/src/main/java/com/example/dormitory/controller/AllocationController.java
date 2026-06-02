@@ -24,23 +24,24 @@ public class AllocationController {
     }
 
     @PostMapping("/auto")
-    @PreAuthorize("hasRole('WARDEN')")
+    @PreAuthorize("hasAnyRole('WARDEN', 'ADMIN')")
     public ResponseEntity<AllocationResultDto> runAutoAllocation() {
         AllocationResultDto result = allocationService.runAllocation();
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/manual")
-    @PreAuthorize("hasRole('WARDEN')")
+     @PreAuthorize("hasAnyRole('WARDEN', 'ADMIN')")
     public ResponseEntity<AllocationDto> manualAllocation(@RequestParam Long studentId, @RequestParam Long roomId) {
         AllocationDto allocation = allocationService.manualAllocate(studentId, roomId);
         return ResponseEntity.ok(allocation);
     }
 
     @PostMapping("/confirm")
-    @PreAuthorize("hasRole('WARDEN')")
+    @PreAuthorize("hasAnyRole('WARDEN', 'ADMIN')")
     public ResponseEntity<Void> confirmAllocation() {
         allocationService.confirmAllocation();
         return ResponseEntity.ok().build();
     }
+
 }

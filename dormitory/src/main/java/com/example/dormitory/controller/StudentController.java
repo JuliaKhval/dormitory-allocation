@@ -41,4 +41,12 @@ public class StudentController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/list")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<List<UserProfileDto>> getAllStudents() {
+        List<User> students = userRepository.findAll().stream()
+                .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName() == RoleName.STUDENT))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(students.stream().map(userMapper::toUserProfileDto).collect(Collectors.toList()));
+    }
 }

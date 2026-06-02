@@ -23,7 +23,7 @@ public class WardenController {
     private final StudentService studentService;
     private final WardenService wardenService;
     private final RoomService roomService;
-private final AllocationService allocationService;
+    private final AllocationService allocationService;
 
     @PutMapping("/preferences/{id}")
     @PreAuthorize("hasRole('WARDEN')")
@@ -39,8 +39,9 @@ private final AllocationService allocationService;
         return ResponseEntity.ok(studentService.getStudentsToAllocate());
     }
     @DeleteMapping("/allocations/{allocationId}")
-    @PreAuthorize("hasRole('WARDEN')")
+    @PreAuthorize("hasAnyRole('WARDEN', 'ADMIN')")
     public ResponseEntity<Void> evictStudent(@PathVariable Long allocationId) {
+        System.out.println("=== DELETE /allocations/" + allocationId + " called");
         allocationService.evictStudent(allocationId);
         return ResponseEntity.noContent().build();
     }
