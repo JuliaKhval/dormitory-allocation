@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <!--
+      Исходная v2.0-016 создаёт составной PK (requester, preferred, year) без id.
+      JPA ожидает суррогатный id. Если id уже есть (Hibernate/ручная миграция) — шаг пропускается.
+    -->
+    <changeSet id="v2.0-017-request-preferences-add-id" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="request_preferences" columnName="id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="request_preferences">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropPrimaryKey tableName="request_preferences"/>
+        <addPrimaryKey tableName="request_preferences" columnNames="id"
+                        constraintName="request_preferences_pkey"/>
+        <addUniqueConstraint tableName="request_preferences"
+                             columnNames="requester_user_id, preferred_user_id, year"
+                             constraintName="uk_request_preferences_triple"/>
+    </changeSet>
+
+    <changeSet id="v2.0-018-request-preferences-rejection-reason" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="request_preferences" columnName="rejection_reason"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="request_preferences">
+            <column name="rejection_reason" type="VARCHAR(500)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v2.0-019-student-benefit-adjustment" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="student_details" columnName="benefit_bonus_adjustment"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="student_details">
+            <column name="benefit_bonus_adjustment" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v2.0-020-allocation-settings" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="allocation_settings"/>
+            </not>
+        </preConditions>
+        <createTable tableName="allocation_settings">
+            <column name="dormitory_id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="floor_order" type="VARCHAR(100)"/>
+            <column name="faculty_priority_order" type="VARCHAR(255)"/>
+            <column name="benefit_floor_start" type="INT"/>
+            <column name="assignment_strategy" type="VARCHAR(50)" defaultValue="SCORE_THRESHOLD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="score_threshold" type="DECIMAL(5,2)"/>
+            <column name="high_score_dormitory_id" type="BIGINT"/>
+            <column name="low_score_dormitory_id" type="BIGINT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="allocation_settings" baseColumnNames="dormitory_id"
+                                 referencedTableName="dormitories" referencedColumnNames="id"
+                                 constraintName="fk_allocation_settings_dormitory"/>
+    </changeSet>
+
+    <changeSet id="v2.0-022-drop-faculty-dormitories" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="faculty_dormitories"/>
+        </preConditions>
+        <dropTable tableName="faculty_dormitories"/>
+    </changeSet>
+
+    <changeSet id="v2.0-023-assignment-strategy-without-faculty-mapping" author="Julia Khval">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="allocation_settings"/>
+        </preConditions>
+        <sql>UPDATE allocation_settings SET assignment_strategy = 'SCORE_THRESHOLD' WHERE assignment_strategy = 'FACULTY_MAPPING'</sql>
+    </changeSet>
+</databaseChangeLog>

@@ -12,4 +12,6 @@
     <include file="v2.0/007-create-allocations.xml" relativeToChangelogFile="true"/>
     <include file="v2.0/008-create-dormitories-table.xml" relativeToChangelogFile="true"/>
     <include file="v2.0/009-add-dormitorie-relations.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/010-remove-dormitory-id-from-users.xml" relativeToChangelogFile="true"/>
+    <include file="v2.0/011-features.xml" relativeToChangelogFile="true"/>
         </databaseChangeLog>
