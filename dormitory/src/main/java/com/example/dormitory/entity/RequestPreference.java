@@ -35,4 +35,7 @@ public class RequestPreference {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestPreferenceStatus status;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
 }

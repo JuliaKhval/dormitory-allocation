@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "study_groups")
+@Table(name = "study_groups", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"group_name", "course", "faculty_id"})
+})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -16,7 +18,7 @@ public class StudyGroup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "group_name", nullable = false, unique = true)
+    @Column(name = "group_name", nullable = false)
     private String groupName;
 
     @ManyToOne

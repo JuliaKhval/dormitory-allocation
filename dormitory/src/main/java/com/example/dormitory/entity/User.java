@@ -1,5 +1,6 @@
 package com.example.dormitory.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +21,7 @@ public class User {
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
-
+    @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Credential credential;
 

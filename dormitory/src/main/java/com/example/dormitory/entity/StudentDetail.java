@@ -42,6 +42,11 @@ public class StudentDetail {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "benefit_bonus_adjustment", nullable = false)
+    @Builder.Default
+    private Integer benefitBonusAdjustment = 0;
+
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "student_benefits",
