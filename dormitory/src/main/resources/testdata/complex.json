@@ -1,0 +1,36 @@
+{
+  "students": [
+    {"fullName": "Илья Соколов", "email": "sokolov.ilya@test.com", "gender": "MALE", "averageScore": 95, "groupIndex": 0, "countryIndex": 0, "benefitIndexes": [2]},
+    {"fullName": "Матвей Лебедев", "email": "lebedev.matvey@test.com", "gender": "MALE", "averageScore": 88, "groupIndex": 0, "countryIndex": 0},
+    {"fullName": "Тимофей Козлов", "email": "kozlov.timofey@test.com", "gender": "MALE", "averageScore": 62, "groupIndex": 1, "countryIndex": 1, "benefitIndexes": [1]},
+    {"fullName": "Глеб Волков", "email": "volkov.gleb@test.com", "gender": "MALE", "averageScore": 91, "groupIndex": 1, "countryIndex": 1},
+    {"fullName": "Артём Зайцев", "email": "zaytsev.artem@test.com", "gender": "MALE", "averageScore": 84, "groupIndex": 2, "countryIndex": 0},
+    {"fullName": "Даниил Новиков", "email": "novikov.daniil@test.com", "gender": "MALE", "averageScore": 77, "groupIndex": 2, "countryIndex": 0},
+    {"fullName": "Анна Морозова", "email": "morozova.anna@test.com", "gender": "FEMALE", "averageScore": 89, "groupIndex": 3, "countryIndex": 0},
+    {"fullName": "Мария Павлова", "email": "pavlova.maria@test.com", "gender": "FEMALE", "averageScore": 94, "groupIndex": 3, "countryIndex": 0, "benefitIndexes": [1]},
+    {"fullName": "Екатерина Григорьева", "email": "grigoryeva.ekaterina@test.com", "gender": "FEMALE", "averageScore": 72, "groupIndex": 4, "countryIndex": 1},
+    {"fullName": "Наталья Васильева", "email": "vasilyeva.natalia@test.com", "gender": "FEMALE", "averageScore": 81, "groupIndex": 4, "countryIndex": 1},
+    {"fullName": "Ольга Фёдорова", "email": "fedorova.olga@test.com", "gender": "FEMALE", "averageScore": 86, "groupIndex": 5, "countryIndex": 0},
+    {"fullName": "Татьяна Семёнова", "email": "semenova.tatiana@test.com", "gender": "FEMALE", "averageScore": 79, "groupIndex": 5, "countryIndex": 0},
+    {"fullName": "Михаил Андреев", "email": "andreev.mikhail@test.com", "gender": "MALE", "averageScore": 93, "groupIndex": 6, "countryIndex": 1, "benefitIndexes": [2]},
+    {"fullName": "Сергей Петров", "email": "petrov.sergey@test.com", "gender": "MALE", "averageScore": 87, "groupIndex": 6, "countryIndex": 1},
+    {"fullName": "Юлия Александрова", "email": "aleksandrova.yulia@test.com", "gender": "FEMALE", "averageScore": 90, "groupIndex": 7, "countryIndex": 0},
+    {"fullName": "Елена Борисова", "email": "borisova.elena@test.com", "gender": "FEMALE", "averageScore": 83, "groupIndex": 7, "countryIndex": 0},
+    {"fullName": "Павел Кузнецов", "email": "kuznetsov.pavel@test.com", "gender": "MALE", "averageScore": 76, "groupIndex": 8, "countryIndex": 0},
+    {"fullName": "Алексей Смирнов", "email": "smirnov.alexey@test.com", "gender": "MALE", "averageScore": 85, "groupIndex": 8, "countryIndex": 0, "benefitIndexes": [1]},
+    {"fullName": "Вера Тимофеева", "email": "timofeeva.vera@test.com", "gender": "FEMALE", "averageScore": 92, "groupIndex": 9, "countryIndex": 0},
+    {"fullName": "Надежда Михайлова", "email": "mikhailova.nadezhda@test.com", "gender": "FEMALE", "averageScore": 80, "groupIndex": 9, "countryIndex": 0}
+  ],
+  "preferences": [
+    {"from": 0, "to": 1}, {"from": 1, "to": 0},
+    {"from": 2, "to": 3}, {"from": 3, "to": 2},
+    {"from": 4, "to": 5}, {"from": 5, "to": 4},
+    {"from": 6, "to": 7}, {"from": 7, "to": 6},
+    {"from": 8, "to": 9}, {"from": 9, "to": 8},
+    {"from": 10, "to": 11}, {"from": 11, "to": 10},
+    {"from": 12, "to": 13}, {"from": 13, "to": 12},
+    {"from": 14, "to": 15}, {"from": 15, "to": 14},
+    {"from": 16, "to": 17}, {"from": 17, "to": 16},
+    {"from": 18, "to": 19}, {"from": 19, "to": 18}
+  ]
+}

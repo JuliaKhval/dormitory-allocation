@@ -1,0 +1,7 @@
+{
+  "students": [
+    {"fullName": "Козлов Кирилл К.", "email": "benefit1@test.com", "gender": "MALE", "averageScore": 72, "groupIndex": 0, "countryIndex": 0, "benefitIndexes": [0]},
+    {"fullName": "Новиков Николай Н.", "email": "benefit2@test.com", "gender": "MALE", "averageScore": 68, "groupIndex": 0, "countryIndex": 0},
+    {"fullName": "Волкова Вера В.", "email": "benefit3@test.com", "gender": "FEMALE", "averageScore": 88, "groupIndex": 1, "countryIndex": 0, "benefitIndexes": [0, 1]}
+  ]
+}
