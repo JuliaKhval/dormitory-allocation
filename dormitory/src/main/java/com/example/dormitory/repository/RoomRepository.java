@@ -15,4 +15,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findSameBlockRooms(@Param("dormitoryId") Long dormitoryId,
                                   @Param("roomId") Long roomId,
                                   @Param("blockCode") String blockCode);
+
+    List<Room> findByDormitoryId(Long dormitoryId);
 }

@@ -5,6 +5,7 @@ import com.example.dormitory.dto.RoomDto;
 import com.example.dormitory.entity.Dormitory;
 import com.example.dormitory.security.UserDetailsImpl;
 import com.example.dormitory.service.RoomService;
+import com.example.dormitory.service.WardenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomController {
     private final RoomService roomService;
+    private final WardenService wardenService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STUDENT', 'WARDEN', 'ADMIN')")
@@ -30,6 +32,12 @@ public class RoomController {
         Long dormitoryId = null;
         if (currentUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_WARDEN"))) {
             dormitoryId = currentUser.getDormitoryId();
+            if (dormitoryId == null) {
+                Dormitory dorm = wardenService.getWardenDormitory(currentUser.getUser().getId());
+                if (dorm != null) {
+                    dormitoryId = dorm.getId();
+                }
+            }
         }
         return ResponseEntity.ok(roomService.getAllRooms(floor, type, dormitoryId));
     }
