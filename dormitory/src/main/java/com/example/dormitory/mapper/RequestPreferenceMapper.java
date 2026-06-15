@@ -11,5 +11,8 @@ public interface RequestPreferenceMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "preferredUserId", source = "preferredUser.id")
     @Mapping(target = "preferredUserName", source = "preferredUser.fullName")
+    @Mapping(target = "rejectionReason", source = "rejectionReason")
+    @Mapping(target = "mutual", ignore = true)
+    @Mapping(target = "reversePreferenceExists", ignore = true)
     PreferenceDto toDto(RequestPreference preference);
 }

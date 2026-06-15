@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class StudentProfileDto {
     private Long id;
+    private Long userId;
     private String fullName;
     private String email;
     private String faculty;
@@ -18,4 +19,5 @@ public class StudentProfileDto {
     private BigDecimal averageScore;
     private String phoneNumber;
     private List<String> benefits;
+    private Integer benefitBonusAdjustment;
 }

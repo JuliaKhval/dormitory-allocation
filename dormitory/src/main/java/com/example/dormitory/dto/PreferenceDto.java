@@ -9,4 +9,7 @@ public class PreferenceDto {
     private Long preferredUserId;
     private String preferredUserName;
     private RequestPreferenceStatus status;
+    private String rejectionReason;
+    private boolean mutual;
+    private boolean reversePreferenceExists;
 }

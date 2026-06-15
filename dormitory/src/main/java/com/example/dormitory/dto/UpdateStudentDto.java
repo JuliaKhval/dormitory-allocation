@@ -12,4 +12,6 @@ public class UpdateStudentDto {
     private BigDecimal averageScore;
     private String phoneNumber;
     private List<Long> benefitTypeIds;
+    private Integer course;
+    private Integer benefitBonusAdjustment;
 }

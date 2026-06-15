@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface StudentProfileMapper {
 
+    @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "email", source = "user.credential.email")
     @Mapping(target = "faculty", source = "group.faculty.name")
