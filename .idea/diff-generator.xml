@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DiffGenerationConfig">
+    <option name="updateChangeLogPath" value="dormitory/src/main/resources/db/changelog/db.changelog-master.xml" />
     <option name="updateDbConnectionName" value="21d14fb1-3e57-4709-a471-ab990ec65b2f" />
   </component>
 </project>

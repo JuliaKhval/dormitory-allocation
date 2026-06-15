@@ -4,6 +4,10 @@
     <title>Панель управления</title>
     <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
     <style>
+        .bg-warning {
+            background-color: #ffc107 !important;
+            transition: all 0.3s;
+        }
         .list-group-item-action { cursor: pointer; }
         .navbar-nav .nav-link { cursor: pointer; }
         .badge { padding: 5px 10px; border-radius: 4px; color: white; }
@@ -45,44 +49,60 @@
     // -------------------- AJAX with JWT --------------------
     function apiRequest(url, method, data, successCallback, errorCallback) {
         const token = localStorage.getItem('jwtToken');
-        console.log('Token:', token); // ДОБАВИТЬ
-        console.log('Request:', method, url); // ДОБАВИТЬ
+        console.log('Request:', method, url);
         if (!token && url !== '/api/v1/auth/login') {
             console.error('No token found, redirecting to login');
             window.location.href = '/login';
             return;
         }
-        $.ajax({
+        return $.ajax({
             url: url,
             type: method,
             contentType: 'application/json',
             headers: { 'Authorization': 'Bearer ' + token },
-            data: data ? JSON.stringify(data) : undefined,
-            success: successCallback,
-            error: function(xhr) {
-                console.error('Request failed:', url, xhr.status, xhr.statusText); // ДОБАВИТЬ
-                if (xhr.status === 401 || xhr.status === 403) {
-                    localStorage.removeItem('jwtToken');
-                    localStorage.removeItem('userId');
-                    localStorage.removeItem('userRole');
-                    window.location.href = '/login';
+            data: data ? JSON.stringify(data) : undefined
+        }).done(successCallback).fail(function(xhr) {
+            console.error('Request failed:', url, xhr.status, xhr.statusText);
+            console.error('Response body:', xhr.responseText);
+
+            if (xhr.status === 401) {
+                // Только 401 означает недействительный токен
+                alert('Сессия истекла. Пожалуйста, войдите снова.');
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userRole');
+                window.location.href = '/login';
+            } else if (xhr.status === 403) {
+                // 403 – запрещено, но токен может быть валидным (недостаточно прав, CSRF)
+                const errorMsg = xhr.responseJSON?.message || xhr.responseText || 'Доступ запрещён';
+                if (errorCallback) {
+                    errorCallback(xhr);
                 } else {
-                    if (errorCallback) errorCallback(xhr);
-                    else console.error('API error', xhr);
+                    alert('Ошибка: ' + errorMsg);
                 }
+            } else {
+                if (errorCallback) errorCallback(xhr);
+                else console.error('API error', xhr);
             }
         });
     }
 
     function apiRequestPromise(url, method, data) {
         return new Promise((resolve, reject) => {
-            apiRequest(url, method, data, resolve, reject);
+            apiRequest(url, method || 'GET', data, resolve, reject);
         });
+    }
+
+    function apiErrorMessage(xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.message) return xhr.responseJSON.message;
+        if (xhr.responseText) return xhr.responseText;
+        return 'Ошибка ' + xhr.status;
     }
 
     // -------------------- Глобальные переменные для студента --------------------
     let selectedRoommates = [];
     let allStudents = [];
+    let wardenContext = { dormitoryAssigned: false };
 
     // -------------------- Главная загрузка --------------------
     function loadDashboard() {
@@ -103,7 +123,9 @@
             menuHtml = `
                 <li class="nav-item"><a class="nav-link" href="#" onclick="loadRooms()">Комнаты (таблица)</a></li>
                 <li class="nav-item"><a class="nav-link" href="#" onclick="loadRoomsVisual()">План комнат</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="loadStudentsToAllocate()">Студенты на заселение</a></li>
                 <li class="nav-item"><a class="nav-link" href="#" onclick="loadAllRequests()">Все заявки</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showAllocationSettings()">Настройки заселения</a></li>
                 <li class="nav-item"><a class="nav-link" href="#" onclick="runAllocation()">Запустить распределение</a></li>
                 <li class="nav-item"><a class="nav-link" href="#" onclick="loadStats()">Статистика</a></li>
             `;
@@ -119,7 +141,25 @@
         }
         $('#menuItems').html(menuHtml);
         if (role === 'STUDENT') loadStudentProfile();
+        else if (role === 'WARDEN') loadWardenDashboard();
         else loadCommonProfile();
+    }
+
+    function loadWardenDashboard() {
+        apiRequest('/api/v1/warden/context', 'GET', null, function(ctx) {
+            wardenContext = ctx;
+            loadCommonProfile();
+        }, function() {
+            wardenContext = { dormitoryAssigned: false };
+            loadCommonProfile();
+        });
+    }
+
+    function ensureWardenHasDormitory() {
+        if (localStorage.getItem('userRole') !== 'WARDEN') return true;
+        if (wardenContext.dormitoryAssigned) return true;
+        alert('Вам не назначено общежитие. Администратор должен назначить общежитие в разделе «Пользователи» → «Назначить общ.»');
+        return false;
     }
 
     // -------------------- Профиль студента --------------------
@@ -148,7 +188,13 @@
     // -------------------- Общий профиль (админ/комендант) --------------------
     function loadCommonProfile() {
         apiRequest('/api/v1/users/profile', 'GET', null, function(user) {
-            $('#content').html(`
+            let dormInfo = '';
+            if (localStorage.getItem('userRole') === 'WARDEN') {
+                dormInfo = wardenContext.dormitoryAssigned
+                    ? `<p><strong>Общежитие:</strong> ${wardenContext.dormitoryName}</p>`
+                    : `<p class="text-warning"><strong>Общежитие:</strong> не назначено</p>`;
+            }
+            let html = `
                 <div class="card">
                     <div class="card-header">Мой профиль</div>
                     <div class="card-body">
@@ -156,10 +202,21 @@
                         <p><strong>ФИО:</strong> ${user.fullName}</p>
                         <p><strong>Email:</strong> ${user.email}</p>
                         <p><strong>Роли:</strong> ${user.roles.join(', ')}</p>
+                        ${dormInfo}
                     </div>
-                </div>
-            `);
+                </div>`;
+            if (localStorage.getItem('userRole') === 'WARDEN' && !wardenContext.dormitoryAssigned) {
+                html = showWardenNoDormitoryBannerHtml() + html;
+            }
+            $('#content').html(html);
         });
+    }
+
+    function showWardenNoDormitoryBannerHtml() {
+        return `<div class="alert alert-warning mb-3">
+            <strong>Общежитие не назначено.</strong>
+            Попросите администратора: «Пользователи» → «Назначить общ.» для вашей учётной записи.
+        </div>`;
     }
 
     // -------------------- СТУДЕНТ: заявки --------------------
@@ -171,14 +228,20 @@
             }
             let html = '<h3>Мои заявки</h3><table class="table"><thead><tr><th>ID</th><th>Дата</th><th>Предпочтения (соседи)</th><th>Результат</th><th>Действия</th></tr></thead><tbody>';
             requests.forEach(r => {
-                let prefsHtml = r.preferences.map(p =>
-                    `<div>${p.preferredUserName}
-                    <span class="badge ${p.status === 'APPROVED' ? 'bg-success' : (p.status === 'REJECTED' ? 'bg-danger' : 'bg-warning')}">
-                        ${p.status}
-                    </span>
-                </div>`
-                ).join('');
-                let resultHtml = r.allocation ? `Комната: ${r.allocation.building} ${r.allocation.floor} этаж, №${r.allocation.roomNumber}` : '—';
+                let prefsHtml = r.preferences.map(p => {
+                    let mutualBadge = p.mutual ? '<span class="badge bg-info">взаимно</span>' : (p.reversePreferenceExists ? '<span class="badge bg-secondary">ожидает ответа</span>' : '');
+                    let reason = p.rejectionReason ? `<small class="text-danger d-block">Причина: ${p.rejectionReason}</small>` : '';
+                    return `<div>${p.preferredUserName} ${mutualBadge}
+                    <span class="badge ${p.status === 'APPROVED' ? 'bg-success' : (p.status === 'REJECTED' ? 'bg-danger' : 'bg-warning')}">${p.status}</span>
+                    ${reason}</div>`;
+                }).join('');
+                let roommatesHtml = '';
+                if (r.allocation && r.allocation.roommates && r.allocation.roommates.length) {
+                    roommatesHtml = '<br><small>Соседи: ' + r.allocation.roommates.map(m => m.fullName).join(', ') + '</small>';
+                }
+                let resultHtml = r.allocation
+                    ? `Комната: ${r.allocation.dormitoryName || ''}, ${r.allocation.floor} этаж, №${r.allocation.roomNumber}${roommatesHtml}`
+                    : '—';
                 html += `<tr>
                         <td>${r.id}</td>
                         <td>${new Date(r.createdAt).toLocaleString()}</td>
@@ -199,102 +262,164 @@
         });
     }
 
-    // -------------------- СТУДЕНТ: создание заявки (с выбором нескольких соседей) --------------------
+    // -------------------- Глобальные переменные для студента --------------------
+
+    let currentStudentData = null;
+
+    // -------------------- Создание заявки (исправленная версия) --------------------
     function showCreateRequestForm() {
         selectedRoommates = [];
-        const userId = localStorage.getItem('userId');
-        apiRequest('/api/v1/students/list', 'GET', null, function(students) {
-            allStudents = students.filter(s => s.id != userId);
-            renderStudentSelectionList(allStudents);
+        // Загружаем данные о текущем студенте
+        apiRequest('/api/v1/students/me', 'GET', null, function(me) {
+            currentStudentData = me;
+            const myUserId = me.userId; // user.id
+            // Загружаем список всех студентов (теперь это StudentProfileDto)
+            apiRequest('/api/v1/students/list', 'GET', null, function(students) {
+                // Фильтруем: исключаем себя, тот же пол и та же страна
+                allStudents = students.filter(s =>
+                    s.userId !== myUserId &&
+                    s.gender === me.gender &&
+                    s.country === me.country
+                );
+                renderCreateRequestForm();
+            });
+        }, function(err) {
+            alert('Ошибка загрузки данных: ' + (err.responseJSON?.message || err.statusText));
         });
     }
 
-    function renderStudentSelectionList(students, filter = '') {
-        const filtered = students.filter(s => s.fullName.toLowerCase().includes(filter.toLowerCase()));
+    function renderCreateRequestForm() {
+        const html = `
+        <div class="card">
+            <div class="card-header">Создание заявки на расселение</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label>Поиск соседей</label>
+                    <input type="text" id="searchStudentInput" class="form-control" placeholder="Введите имя..." autocomplete="off">
+                    <div id="studentListContainer" class="list-group mt-2" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                <div class="mb-3">
+                    <label>Выбранные соседи (максимум 3)</label>
+                    <ul id="selectedRoommatesList" class="list-group"></ul>
+                </div>
+                <button class="btn btn-primary" onclick="submitRequest()">Подать заявку</button>
+                <button class="btn btn-secondary" onclick="loadMyRequests()">Отмена</button>
+            </div>
+        </div>
+    `;
+        $('#content').html(html);
+        // Обработчик ввода в поле поиска
+        $('#searchStudentInput').on('input', function() {
+            updateStudentList($(this).val());
+        });
+        // Первоначальное отображение списка
+        updateStudentList('');
+        updateSelectedList();
+    }
+
+    function updateStudentList(filter) {
+        const filterLower = filter.toLowerCase();
+        const filtered = allStudents.filter(s => s.fullName.toLowerCase().includes(filterLower));
         let listHtml = '';
-        filtered.forEach(s => {
-            const isSelected = selectedRoommates.some(r => r.id === s.id);
-            listHtml += `
+        if (filtered.length === 0) {
+            listHtml = '<div class="list-group-item">Студенты не найдены</div>';
+        } else {
+            filtered.forEach(s => {
+                const isSelected = selectedRoommates.some(r => r.userId === s.userId);
+                listHtml += `
                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                    ${s.fullName}
+                    ${escapeHtml(s.fullName)} (${escapeHtml(s.groupName || '')}, ${s.course || ''} курс)
                     <button class="btn btn-sm ${isSelected ? 'btn-secondary' : 'btn-primary'}"
-                            onclick="${isSelected ? `removeRoommate(${s.id})` : `addRoommate(${s.id}, '${s.fullName.replace(/'/g, "\\'")}')`}">
+                            onclick="${isSelected ? `removeRoommate(${s.userId})` : `addRoommate(${s.userId})`}">
                         ${isSelected ? 'Удалить' : 'Добавить'}
                     </button>
                 </div>
             `;
-        });
-        const selectedHtml = selectedRoommates.map(r => `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                ${r.fullName}
-                <button class="btn btn-sm btn-danger" onclick="removeRoommate(${r.id})">Удалить</button>
-            </li>
-        `).join('');
-        const contentHtml = `
-            <div class="card">
-                <div class="card-header">Создание заявки</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label>Поиск студентов</label>
-                        <input type="text" id="searchStudentInput" class="form-control" placeholder="Введите имя...">
-                        <div id="studentList" class="list-group mt-2" style="max-height: 300px; overflow-y: auto;">${listHtml}</div>
-                    </div>
-                    <div class="mb-3">
-                        <label>Выбранные соседи (макс. 3)</label>
-                        <ul id="selectedRoommatesList" class="list-group">${selectedHtml}</ul>
-                    </div>
-                    <button class="btn btn-primary" onclick="submitRequest()">Подать заявку</button>
-                </div>
-            </div>
-        `;
-        $('#content').html(contentHtml);
-        $('#searchStudentInput').off('input').on('input', function() {
-            renderStudentSelectionList(allStudents, $(this).val());
-        });
+            });
+        }
+        $('#studentListContainer').html(listHtml);
     }
 
-    function addRoommate(id, fullName) {
+    function updateSelectedList() {
+        if (selectedRoommates.length === 0) {
+            $('#selectedRoommatesList').html('<li class="list-group-item">Вы не выбрали ни одного соседа</li>');
+            return;
+        }
+        let selectedHtml = '';
+        selectedRoommates.forEach(r => {
+            selectedHtml += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                ${escapeHtml(r.fullName)}
+                <button class="btn btn-sm btn-danger" onclick="removeRoommate(${r.userId})">Удалить</button>
+            </li>
+        `;
+        });
+        $('#selectedRoommatesList').html(selectedHtml);
+    }
+
+    function addRoommate(userId) {
+        const student = allStudents.find(s => s.userId === userId);
+        if (!student) {
+            console.warn('Студент не найден', userId);
+            return;
+        }
         if (selectedRoommates.length >= 3) {
             alert('Нельзя выбрать больше 3 соседей');
             return;
         }
-        if (!selectedRoommates.some(r => r.id === id)) {
-            selectedRoommates.push({ id, fullName });
-            refreshStudentLists();
+        if (selectedRoommates.some(r => r.userId === userId)) {
+            alert('Этот студент уже выбран');
+            return;
         }
+        selectedRoommates.push({ userId: student.userId, fullName: student.fullName });
+        // Обновляем отображение
+        updateStudentList($('#searchStudentInput').val());
+        updateSelectedList();
     }
 
-    function removeRoommate(id) {
-        selectedRoommates = selectedRoommates.filter(r => r.id !== id);
-        refreshStudentLists();
-    }
-
-    function refreshStudentLists() {
-        const filterValue = $('#searchStudentInput').val();
-        renderStudentSelectionList(allStudents, filterValue);
+    function removeRoommate(userId) {
+        selectedRoommates = selectedRoommates.filter(r => r.userId !== userId);
+        updateStudentList($('#searchStudentInput').val());
+        updateSelectedList();
     }
 
     function submitRequest() {
-        const preferredUserIds = selectedRoommates.map(r => r.id);
+        const preferredUserIds = selectedRoommates.map(r => r.userId);
         if (preferredUserIds.length > 3) {
             alert('Нельзя выбрать больше 3 соседей');
             return;
         }
         const data = { preferredUserIds: preferredUserIds };
         apiRequest('/api/v1/requests', 'POST', data,
-            () => { alert('Заявка создана'); loadMyRequests(); },
-            (xhr) => alert('Ошибка: ' + (xhr.responseJSON?.message || 'Не удалось создать заявку'))
+            function() {
+                alert('Заявка создана');
+                loadMyRequests();
+            },
+            function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Не удалось создать заявку';
+                alert('Ошибка: ' + msg);
+            }
         );
     }
 
+    // Функция экранирования HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
     // -------------------- КОМНАТЫ (таблица) --------------------
     function loadRooms() {
         apiRequest('/api/v1/rooms', 'GET', null, function(rooms) {
             let html = '<h3>Комнаты</h3><table class="table">';
-            html += '<thead><tr><th>Корпус</th><th>Этаж</th><th>№</th><th>Вместимость</th><th>Тип</th><th>Занято</th><th>Удобства</th><th></th></tr></thead><tbody>';
+            html += '<thead><tr><th>Этаж</th><th>№</th><th>Вместимость</th><th>Тип</th><th>Занято</th><th>Удобства</th><th></th></tr></thead><tbody>';
             rooms.forEach(r => {
                 html += `<tr>
-                            <td>${r.building}</td>
+
                             <td>${r.floor}</td>
                             <td>${r.roomNumber}</td>
                             <td>${r.capacity}</td>
@@ -454,19 +579,29 @@
 
     function showRoomDetails(roomId) {
         apiRequest(`/api/v1/rooms/${roomId}`, 'GET', null, function(room) {
-            apiRequest('/api/v1/warden/students-to-allocate', 'GET', null, function(students) {
-                let studentOptions = '<option value="">-- Выберите студента --</option>';
+            const studentQuery = $('#studentAllocateFilter').val() || '';
+            apiRequest('/api/v1/warden/students-to-allocate?name=' + encodeURIComponent(studentQuery), 'GET', null, function(students) {
+                let studentOptions = '<option value="">-- Выберите студента (ФИО) --</option>';
                 students.forEach(s => {
-                    studentOptions += `<option value="${s.id}">${s.fullName} (рейтинг: ${s.averageScore})</option>`;
-                });
+                    const userId = s.userId || '';
+                    const faculty = s.faculty || '';
+                    const group = s.groupName || '';
+                    studentOptions += `<option value="${userId}">${s.fullName} — ${faculty}, ${group}, балл: ${s.averageScore}</option>`; });
                 let roomTypeLocalized = room.type === 'MALE' ? 'Мужская' : (room.type === 'FEMALE' ? 'Женская' : 'Не определена');
                 let residentsHtml = '<ul class="list-group">';
                 if (room.roommates && room.roommates.length) {
                     room.roommates.forEach(r => {
-                        residentsHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                            ${r.fullName}
-                                            <button class="btn btn-sm btn-danger" onclick="evictStudent(${r.allocationId})">Выселить</button>
-                                          </li>`;
+                        residentsHtml += `<li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div><strong>${r.fullName}</strong><br>
+                                <small>${r.faculty || ''} ${r.groupName || ''}, ${r.country || ''}, балл: ${r.averageScore || '—'}</small></div>
+                                <div>
+                                    <button class="btn btn-sm btn-warning me-1" onclick="showRelocateOptions(${r.allocationId})">Переселить</button>
+                                    <button class="btn btn-sm btn-danger" onclick="evictStudent(${r.allocationId})">Выселить</button>
+                                </div>
+                            </div>
+                            <div id="relocate-${r.allocationId}" class="mt-2" style="display:none;"></div>
+                          </li>`;
                     });
                 } else {
                     residentsHtml += '<li class="list-group-item">Нет жильцов</li>';
@@ -492,6 +627,7 @@
                                     ${residentsHtml}
                                     <hr>
                                     <h6>Заселить студента</h6>
+                                    <input type="text" id="studentAllocateFilter" class="form-control mb-2" placeholder="Поиск по ФИО..." onkeyup="filterAllocateStudents()">
                                     <select id="allocateStudentId" class="form-control">${studentOptions}</select>
                                     <button class="btn btn-primary mt-2" onclick="manualAllocateToRoom(${room.id})">Заселить</button>
                                 </div>
@@ -500,6 +636,7 @@
                     </div>
                 `;
                 $('body').append(modalHtml);
+                $('#roomModal').data('room-id', roomId);
                 $('#roomModal').modal('show');
                 $('#roomModal').on('hidden.bs.modal', function() { $('#roomModal').remove(); });
             }).catch(() => alert('Не удалось загрузить список студентов для заселения'));
@@ -517,10 +654,39 @@
         }
     }
 
-    function manualAllocateToRoom(roomId) {
+    function filterAllocateStudents() {
+        const roomId = $('#roomModal').data('room-id');
+        if (roomId) showRoomDetails(roomId);
+    }
 
-        const studentId = $('#allocateStudentId').val();
-        console.log('Sending request to', `/api/v1/allocations/manual?studentId=${studentId}&roomId=${roomId}`); // ДОБАВИТЬ
+    function showRelocateOptions(allocationId) {
+        const container = $(`#relocate-${allocationId}`);
+        if (container.is(':visible')) { container.hide().empty(); return; }
+        apiRequest(`/api/v1/allocations/${allocationId}/relocate-suggestions`, 'GET', null, function(rooms) {
+            if (!rooms.length) {
+                container.html('<p class="text-muted">Нет подходящих свободных комнат</p>').show();
+                return;
+            }
+            let html = '<label>Выберите комнату для переселения:</label><select class="form-control mb-2" id="relocateTarget-' + allocationId + '">';
+            rooms.forEach(r => {
+                html += `<option value="${r.roomId}">№${r.roomNumber}, этаж ${r.floor} (${r.occupied}/${r.capacity})</option>`;
+            });
+            html += `</select><button class="btn btn-sm btn-success" onclick="relocateStudent(${allocationId})">Подтвердить переселение</button>`;
+            container.html(html).show();
+        });
+    }
+
+    function relocateStudent(allocationId) {
+        const targetRoomId = $(`#relocateTarget-${allocationId}`).val();
+        apiRequest(`/api/v1/allocations/${allocationId}/relocate?targetRoomId=${targetRoomId}`, 'POST', null,
+            () => { alert('Студент переселён'); $('#roomModal').modal('hide'); loadRoomsVisual(); },
+            (xhr) => alert('Ошибка: ' + (xhr.responseJSON?.message || xhr.responseText))
+        );
+    }
+
+    function manualAllocateToRoom(roomId) {
+        const studentId = $('#allocateStudentId').val();  // сначала получим ID
+        console.log('Sending request to', `/api/v1/allocations/manual?studentId=${studentId}&roomId=${roomId}`);
         if (!studentId) { alert('Выберите студента'); return; }
         apiRequest(`/api/v1/allocations/manual?studentId=${studentId}&roomId=${roomId}`, 'POST', null,
             () => { alert('Студент заселён'); $('#roomModal').modal('hide'); loadRoomsVisual(); },
@@ -535,13 +701,16 @@
             requests.forEach(r => {
                 let prefsHtml = '', statusSelects = '';
                 r.preferences.forEach(p => {
-                    prefsHtml += `<div>${p.preferredUserName} <span class="badge bg-secondary">${p.status}</span></div>`;
-                    statusSelects += `<div>${p.preferredUserName}:
-                                        <select data-pref-id="${p.id}" class="pref-status mb-1">
-                                            <option value="PENDING" ${p.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
-                                            <option value="APPROVED" ${p.status === 'APPROVED' ? 'selected' : ''}>APPROVED</option>
-                                            <option value="REJECTED" ${p.status === 'REJECTED' ? 'selected' : ''}>REJECTED</option>
+                    const mutual = p.mutual ? ' <span class="badge bg-info">взаимно</span>' : '';
+                    const reason = p.rejectionReason ? `<br><small>Отклонено: ${p.rejectionReason}</small>` : '';
+                    prefsHtml += `<div>${p.preferredUserName}${mutual} <span class="badge bg-secondary">${p.status}</span>${reason}</div>`;
+                    statusSelects += `<div class="mb-2 border-bottom pb-2">${p.preferredUserName}${mutual}:
+                                        <select data-pref-id="${p.id}" class="pref-status form-control form-control-sm mb-1">
+                                            <option value="PENDING" ${p.status === 'PENDING' ? 'selected' : ''}>Ожидает</option>
+                                            <option value="APPROVED" ${p.status === 'APPROVED' ? 'selected' : ''}>Одобрено</option>
+                                            <option value="REJECTED" ${p.status === 'REJECTED' ? 'selected' : ''}>Отклонено</option>
                                         </select>
+                                        <input type="text" data-pref-id="${p.id}" class="pref-reason form-control form-control-sm" placeholder="Причина отклонения (обязательно при отклонении)" value="${p.rejectionReason || ''}">
                                     </div>`;
                 });
                 html += `<tr>
@@ -558,21 +727,142 @@
     }
 
     function savePreferences(requestId) {
-        const selects = $(`#content table tr:has(button[onclick*="${requestId}"]) select.pref-status`);
+        const row = $(`#content table tr:has(button[onclick*="${requestId}"])`);
+        const selects = row.find('select.pref-status');
         let promises = [];
         selects.each(function() {
             const prefId = $(this).data('pref-id');
             const newStatus = $(this).val();
+            const reason = row.find(`input.pref-reason[data-pref-id="${prefId}"]`).val();
+            if (newStatus === 'REJECTED' && !reason) {
+                alert('Укажите причину отклонения для ' + prefId);
+                return;
+            }
             promises.push(new Promise((resolve, reject) => {
-                apiRequest(`/api/v1/warden/preferences/${prefId}?status=${newStatus}`, 'PUT', null, resolve, reject);
+                apiRequest(`/api/v1/warden/preferences/${prefId}`, 'PUT', { status: newStatus, rejectionReason: reason }, resolve, reject);
             }));
         });
         Promise.all(promises).then(() => { alert('Статусы обновлены'); loadAllRequests(); })
             .catch(() => alert('Ошибка при обновлении статусов'));
     }
 
+    function loadStudentsToAllocate() {
+        if (!ensureWardenHasDormitory()) return;
+        apiRequest('/api/v1/warden/students-to-allocate', 'GET', null, function(students) {
+            let html = '<h3>Студенты на заселение</h3><p class="text-muted">Отсортированы по приоритету (балл + льготы)</p>';
+            html += '<table class="table"><thead><tr><th>ФИО</th><th>Факультет</th><th>Группа</th><th>Курс</th><th>Балл</th><th>Льготы</th></tr></thead><tbody>';
+            students.forEach(s => {
+                html += `<tr><td>${s.fullName}</td><td>${s.faculty || '—'}</td><td>${s.groupName || '—'}</td><td>${s.course || '—'}</td><td>${s.averageScore}</td><td>${(s.benefits || []).join(', ') || '—'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            $('#content').html(html);
+        }, (xhr) => alert(apiErrorMessage(xhr)));
+    }
+
+    function showAllocationSettings() {
+        if (!ensureWardenHasDormitory()) return;
+        apiRequest('/api/v1/warden/allocation-settings', 'GET', null, function(s) {
+            const floors = (s.floorOrder || []).join(',');
+            const faculties = (s.facultyPriorityOrder || []).join(',');
+            $('#content').html(`
+                <div class="card"><div class="card-header">Настройки заселения (ваше общежитие)</div>
+                <div class="card-body">
+                    <p class="text-muted">Порядок этажей (через запятую, например: 1,2,3,4). Льготники — с указанного этажа.</p>
+                    <label>Порядок этажей</label>
+                    <input id="floorOrder" class="form-control mb-2" value="${floors}">
+                    <label>Этаж для льготников (с какого)</label>
+                    <input id="benefitFloorStart" type="number" class="form-control mb-2" value="${s.benefitFloorStart || ''}">
+                    <label>Приоритет факультетов (ID через запятую)</label>
+                    <input id="facultyPriorityOrder" class="form-control mb-2" value="${faculties}">
+                    <button class="btn btn-primary" onclick="saveAllocationSettings()">Сохранить</button>
+                </div></div>`);
+        }, (xhr) => alert(apiErrorMessage(xhr)));
+    }
+
+    function saveAllocationSettings() {
+        if (!ensureWardenHasDormitory()) return;
+        const floorOrder = $('#floorOrder').val().split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        const facultyPriorityOrder = $('#facultyPriorityOrder').val().split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        const data = {
+            floorOrder,
+            facultyPriorityOrder,
+            benefitFloorStart: parseInt($('#benefitFloorStart').val()) || null,
+            assignmentStrategy: 'SCORE_THRESHOLD'
+        };
+        apiRequest('/api/v1/warden/allocation-settings', 'PUT', data, () => alert('Настройки сохранены'),
+            (xhr) => alert(apiErrorMessage(xhr)));
+    }
+
+    // -------------------- АВТОМАТИЧЕСКОЕ РАСПРЕДЕЛЕНИЕ С АНИМАЦИЕЙ --------------------
     function runAllocation() {
-        apiRequest('/api/v1/allocations/auto', 'POST', null, () => alert('Распределение запущено'));
+        if (!confirm('Запустить автоматическое распределение с визуализацией?')) return;
+
+        const btn = event.target;
+        const originalText = $(btn).text();
+        $(btn).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Распределение...');
+
+        apiRequest('/api/v1/allocations/auto', 'POST', null, function(result) {
+            $(btn).prop('disabled', false).text(originalText);
+
+            const allocations = result.allocations;
+            const unallocated = result.unallocatedRequestIds;
+
+            if (!allocations || allocations.length === 0) {
+                alert('Нет подходящих комнат для распределения');
+                return;
+            }
+
+            // Группируем заселения по комнатам (сколько новых жильцов добавлено в каждую комнату)
+            const roomChanges = {};
+            allocations.forEach(a => {
+                if (!roomChanges[a.roomId]) roomChanges[a.roomId] = 0;
+                roomChanges[a.roomId]++;
+            });
+
+            const roomIds = Object.keys(roomChanges);
+            let currentIndex = 0;
+
+            // Функция анимации для следующей комнаты
+            function animateNextRoom() {
+                if (currentIndex >= roomIds.length) {
+                    alert(`Распределение завершено. Заселено: ${allocations.length}, нераспределено: ${unallocated.length}`);
+                    loadRoomsVisual(); // финальное обновление плана комнат
+                    return;
+                }
+
+                const roomId = roomIds[currentIndex];
+                const card = $(`.room-card[data-room-id="${roomId}"]`);
+
+                // Подсветка комнаты
+                card.addClass('bg-warning');
+
+                // Загружаем актуальные данные комнаты
+                apiRequest(`/api/v1/rooms/${roomId}`, 'GET', null, function(room) {
+                    // Обновляем текст занятости
+                    card.find('.room-capacity').text(`${room.occupied}/${room.capacity}`);
+
+                    // Обновляем класс цвета (зелёный, жёлтый, красный)
+                    card.removeClass('room-free room-partial room-occupied');
+                    if (room.occupied === 0) card.addClass('room-free');
+                    else if (room.occupied === room.capacity) card.addClass('room-occupied');
+                    else card.addClass('room-partial');
+
+                    // Убираем подсветку через 0.8 секунды и переходим к следующей комнате
+                    setTimeout(() => {
+                        card.removeClass('bg-warning');
+                        currentIndex++;
+                        animateNextRoom();
+                    }, 800);
+                });
+            }
+
+            // Запускаем анимацию
+            animateNextRoom();
+
+        }, () => {
+            $(btn).prop('disabled', false).text(originalText);
+            alert('Ошибка при запуске распределения');
+        });
     }
 
     // -------------------- СТАТИСТИКА --------------------
@@ -597,12 +887,28 @@
 
     // -------------------- АДМИНИСТРАТОР --------------------
     function generateTestData() {
-        if (confirm('Сгенерировать 50 случайных студентов и заявок? Это может занять некоторое время.')) {
-            apiRequest('/api/v1/admin/test-data', 'POST', { studentCount: 50 }, function() {
-                alert('Тестовые данные успешно созданы');
-                loadAllUsers();
-            }, () => alert('Ошибка при генерации данных'));
-        }
+        apiRequest('/api/v1/admin/test-data/datasets', 'GET', null, function(datasets) {
+            let options = '<option value="random">Случайные (50 студентов)</option>';
+            datasets.forEach(d => { options += `<option value="${d}">${d}</option>`; });
+            $('#content').html(`
+                <div class="card"><div class="card-header">Тестовые данные</div>
+                <div class="card-body">
+                    <label>Набор данных</label>
+                    <select id="testDataset" class="form-control mb-2">${options}</select>
+                    <input type="number" id="testStudentCount" class="form-control mb-2" value="50" placeholder="Кол-во (для random)">
+                    <button class="btn btn-primary" onclick="confirmGenerateTestData()">Загрузить</button>
+                </div></div>`);
+        });
+    }
+
+    function confirmGenerateTestData() {
+        const dataset = $('#testDataset').val();
+        const count = parseInt($('#testStudentCount').val()) || 50;
+        if (!confirm('Загрузить тестовые данные?')) return;
+        apiRequest('/api/v1/admin/test-data', 'POST', { dataset, studentCount: count }, function() {
+            alert('Тестовые данные успешно созданы');
+            loadAllUsers();
+        }, () => alert('Ошибка при генерации данных'));
     }
     function assignDormitoryToWarden(userId) {
         apiRequest('/api/v1/admin/dormitories', 'GET', null, function(dormitories) {
@@ -651,6 +957,8 @@
         apiRequest('/api/v1/admin/users', 'GET', null, function(users) {
             let html = '<h3>Пользователи</h3><table class="table"><thead><tr><th>ID</th><th>ФИО</th><th>Email</th><th>Роли</th><th></th></tr></thead><tbody>';
             users.forEach(u => {
+                let wardenBtn = u.roles.includes('WARDEN')
+                    ? `<button class="btn btn-sm btn-info me-1" onclick="assignDormitoryToWarden(${u.id})">Назначить общ.</button>` : '';
                 html += `<tr>
                             <td>${u.id}</td>
                             <td>${u.fullName}</td>
@@ -659,15 +967,13 @@
                             <td>
                                 <button class="btn btn-sm btn-primary me-1" onclick="showEditRolesForm(${JSON.stringify(u).replace(/"/g, '&quot;')})">Роли</button>
                                 <button class="btn btn-sm btn-secondary me-1" onclick="showEditStudentForm(${u.id})">Ред. студента</button>
+                                ${wardenBtn}
                                 <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Удалить</button>
                             </td>
                          </tr>`;
             });
             html += '</tbody></table>';
             $('#content').html(html);
-            if (u.roles.includes('WARDEN')) {
-                html += `<button class="btn btn-sm btn-info me-1" onclick="assignDormitoryToWarden(${u.id})">Назначить общ.</button>`;
-            }
         });
     }
 
@@ -727,6 +1033,7 @@
                         <div class="mb-2">Средний балл: <input type="number" step="0.01" id="editAvgScore" value="${student.averageScore}"></div>
                         <div class="mb-2">Телефон: <input type="text" id="editPhone" value="${student.phoneNumber || ''}"></div>
                         <div class="mb-2">Льготы: <div id="editBenefits">${benefitHtml}</div></div>
+                        <div class="mb-2">Уменьшение баллов за льготы: <input type="number" id="editBenefitAdj" value="${student.benefitBonusAdjustment || 0}" class="form-control"></div>
                         <button class="btn btn-primary" onclick="updateStudent()">Сохранить</button>
                     </div>
                 </div>
@@ -744,21 +1051,31 @@
             countryId: parseInt($('#editCountryId').val()),
             averageScore: parseFloat($('#editAvgScore').val()),
             phoneNumber: $('#editPhone').val(),
-            benefitTypeIds: $('#editBenefits input:checked').map(function() { return parseInt($(this).val()); }).get()
+            benefitTypeIds: $('#editBenefits input:checked').map(function() { return parseInt($(this).val()); }).get(),
+            benefitBonusAdjustment: parseInt($('#editBenefitAdj').val()) || 0
         };
         apiRequest(`/api/v1/admin/students/${userId}`, 'PUT', data, () => { alert('Данные обновлены'); loadAllUsers(); });
     }
 
     // -------------------- Создание пользователя (админ) --------------------
+    let allGroupsCache = [];
+
     function showCreateUserForm() {
+        $('#content').html('<div class="alert alert-info">Загрузка формы...</div>');
         Promise.all([
             apiRequestPromise('/api/v1/admin/groups', 'GET'),
+            apiRequestPromise('/api/v1/admin/faculties', 'GET'),
             apiRequestPromise('/api/v1/admin/countries', 'GET'),
             apiRequestPromise('/api/v1/admin/benefits', 'GET')
-        ]).then(([groups, countries, benefits]) => {
-            let groupOptions = groups.map(g => `<option value="${g.id}">${g.groupName} (${g.faculty.name}, ${g.course} курс)</option>`).join('');
+        ]).then(([groups, faculties, countries, benefits]) => {
+            allGroupsCache = groups || [];
+            if (!faculties.length || !allGroupsCache.length) {
+                $('#content').html('<div class="alert alert-danger">Нет факультетов или учебных групп в базе. Сначала добавьте справочники.</div>');
+                return;
+            }
+            let facultyOptions = faculties.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             let countryOptions = countries.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            let benefitHtml = benefits.map(b => `<div><input type="checkbox" value="${b.id}"> ${b.name}</div>`).join('');
+            let benefitHtml = benefits.map(b => `<div><input type="checkbox" value="${b.id}"> ${b.name} (+${b.priorityBonus})</div>`).join('');
             $('#content').html(`
                 <div class="card">
                     <div class="card-header">Создать пользователя</div>
@@ -773,8 +1090,15 @@
                             <input type="checkbox" value="ADMIN" class="role-checkbox-create"> ADMIN
                         </div>
                         <div id="studentFieldsCreate" style="display:none;">
+                            <label>Факультет:</label>
+                            <select id="facultyId" class="form-control mb-2" onchange="filterGroupsForCreate()">${facultyOptions}</select>
+                            <label>Курс:</label>
+                            <select id="courseFilter" class="form-control mb-2" onchange="filterGroupsForCreate()">
+                                <option value="">Все курсы</option>
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                            </select>
                             <label>Группа:</label>
-                            <select id="groupId" class="form-control mb-2">${groupOptions}</select>
+                            <select id="groupId" class="form-control mb-2"></select>
                             <label>Страна:</label>
                             <select id="countryId" class="form-control mb-2">${countryOptions}</select>
                             <select id="gender" class="form-control mb-2">
@@ -791,10 +1115,32 @@
                 </div>
             `);
             $('.role-checkbox-create').change(function() {
-                if ($('.role-checkbox-create[value="STUDENT"]').is(':checked')) $('#studentFieldsCreate').show();
-                else $('#studentFieldsCreate').hide();
+                if ($('.role-checkbox-create[value="STUDENT"]').is(':checked')) {
+                    $('#studentFieldsCreate').show();
+                    filterGroupsForCreate();
+                } else $('#studentFieldsCreate').hide();
             });
-        }).catch(() => alert('Не удалось загрузить справочники'));
+            filterGroupsForCreate();
+        }).catch((xhr) => {
+            const msg = xhr && xhr.status ? apiErrorMessage(xhr) : 'Не удалось загрузить справочники';
+            alert(msg);
+            $('#content').html(`<div class="alert alert-danger">${msg}</div>`);
+        });
+    }
+
+    function filterGroupsForCreate() {
+        const facultyId = parseInt($('#facultyId').val(), 10);
+        const course = $('#courseFilter').val();
+        const filtered = allGroupsCache.filter(g =>
+            g.faculty && g.faculty.id === facultyId && (!course || String(g.course) === course)
+        );
+        if (!filtered.length) {
+            $('#groupId').html('<option value="">— нет групп для выбранного факультета/курса —</option>');
+            return;
+        }
+        $('#groupId').html(filtered.map(g =>
+            `<option value="${g.id}">${g.groupName} (${g.faculty.name}, ${g.course} курс)</option>`
+        ).join(''));
     }
 
     function createUser() {

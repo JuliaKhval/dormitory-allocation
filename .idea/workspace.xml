@@ -4,39 +4,43 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fc89226-1f92-43b7-b3aa-21d9798aed94" name="Changes" comment="update: liquibase script and schema database">
-      <change afterPath="$PROJECT_DIR$/.idea/diff-generator.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/StudentController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/StudentMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/StudentRegistrationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dormitory/src/main/resources/liquibase.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="4fc89226-1f92-43b7-b3aa-21d9798aed94" name="Changes" comment="feat: add test json files">
+      <change afterPath="$PROJECT_DIR$/dormitory/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/RoommateInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/TestDataService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dormitory/src/main/resources/testdata/sql query" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/diff-generator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/diff-generator.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/DormitoryApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/DormitoryApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/AllocationResultDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/AllocationResultDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/CreateRequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/CreateRequestDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/RequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/RequestDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/AllocationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/AllocationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/RequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/RequestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/RoomController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/RoomController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/StudentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/WardenController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/WardenController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/WebController.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/controller/WebController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/GenerateTestDataDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/GenerateTestDataDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/PreferenceDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/PreferenceDto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/StudentProfileDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/StudentProfileDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/SystemStatsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/SystemStatsDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Admin.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Admin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Allocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Allocation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Request.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Request.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Room.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Room.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Student.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Warden.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/entity/Warden.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/enums/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/enums/Role.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AdminRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AdminRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AllocationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/AllocationRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/UpdateStudentDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/dto/UpdateStudentDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/RequestPreferenceMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/RequestPreferenceMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/StudentProfileMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/mapper/StudentProfileMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestPreferenceRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RequestPreferenceRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/RoomRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/StudentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/WardenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/repository/WardenRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AuthService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dormitory/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AdminService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AllocationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AllocationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/CompatibilityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/CompatibilityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/PriorityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/PriorityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RequestPreferenceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RequestPreferenceService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RequestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RoomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/RoomService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/StudentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/java/com/example/dormitory/service/StudentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/resources/db/changelog/v2.0/011-features.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/resources/db/changelog/v2.0/011-features.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/resources/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/resources/templates/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dormitory/src/main/resources/testdata/basic.json" beforeDir="false" afterPath="$PROJECT_DIR$/dormitory/src/main/resources/testdata/basic.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,32 +50,34 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="HTML File" />
         <option value="Class" />
+        <option value="Liquibase Changelog" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "JuliaKhval"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;JuliaKhval&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/JuliaKhval/dormitory-allocation.git",
-    "accountId": "698f92a9-cf03-4061-9b8f-44fe8c1c64d5"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/JuliaKhval/dormitory-allocation.git&quot;,
+    &quot;accountId&quot;: &quot;698f92a9-cf03-4061-9b8f-44fe8c1c64d5&quot;
   }
-}]]></component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="3AZE7MZiYVTZM54WUYFQ5RUyNNX" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -79,8 +85,11 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Docker.dormitory: Compose Deployment.executor": "Run",
     "Maven.dormitory [clean].executor": "Run",
     "Maven.dormitory [compile].executor": "Run",
+    "Maven.dormitory [package].executor": "Run",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
     "RequestMappingsPanelWidth0": "75",
@@ -92,12 +101,13 @@
     "Spring Boot.DormitoryApplication.executor": "Run",
     "git-widget-placeholder": "develop",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Java/dormitory-allocation/dormitory/src/main/resources",
+    "last_opened_file_path": "D:/Java/dormitory-allocation/dormitory",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -108,6 +118,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Java\dormitory-allocation\dormitory" />
       <recent name="D:\Java\dormitory-allocation\dormitory\src\main\resources" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -115,7 +126,7 @@
       <recent name="D:\Java\dormitory-allocation\dormitory\src\main\resources\db" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Spring Boot.DormitoryApplication">
     <configuration name="DormitoryApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="dormitory" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.dormitory.DormitoryApplication" />
@@ -123,6 +134,23 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml" />
+      <method v="2" />
+    </configuration>
+    <configuration name="dormitory: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="dormitory/docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.dormitory: Compose Deployment" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -139,47 +167,16 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1772791523323</updated>
-      <workItem from="1772791524963" duration="25330000" />
-    </task>
-    <task id="LOCAL-00001" summary="Initial commit">
-      <option name="closed" value="true" />
-      <created>1772791683392</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1772791683392</updated>
-    </task>
-    <task id="LOCAL-00002" summary="build: Init dependencies and configure yml">
-      <option name="closed" value="true" />
-      <created>1772792326928</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1772792326928</updated>
-    </task>
-    <task id="LOCAL-00003" summary="feat: add project package structure and enums">
-      <option name="closed" value="true" />
-      <created>1772793422101</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1772793422101</updated>
-    </task>
-    <task id="LOCAL-00004" summary="feat: create entities">
-      <option name="closed" value="true" />
-      <created>1772794589111</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1772794589111</updated>
-    </task>
-    <task id="LOCAL-00005" summary="feat: add repositories for all entities">
-      <option name="closed" value="true" />
-      <created>1773043081253</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1773043081253</updated>
+      <workItem from="1772791524963" duration="33269000" />
+      <workItem from="1774528738442" duration="958000" />
+      <workItem from="1776112920557" duration="8161000" />
+      <workItem from="1776204887642" duration="51188000" />
+      <workItem from="1779680170960" duration="22758000" />
+      <workItem from="1780043919076" duration="1383000" />
+      <workItem from="1780142670390" duration="2759000" />
+      <workItem from="1780323812288" duration="922000" />
+      <workItem from="1780384065618" duration="19296000" />
+      <workItem from="1781040069095" duration="16845000" />
     </task>
     <task id="LOCAL-00006" summary="feat: add liquibase migration scripts for initial schema">
       <option name="closed" value="true" />
@@ -213,7 +210,367 @@
       <option name="project" value="LOCAL" />
       <updated>1774359310966</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="update: all properties and dependency">
+      <option name="closed" value="true" />
+      <created>1774359547605</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1774359547605</updated>
+    </task>
+    <task id="LOCAL-00011" summary="update: all entities">
+      <option name="closed" value="true" />
+      <created>1774361120713</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1774361120713</updated>
+    </task>
+    <task id="LOCAL-00012" summary="update: enums">
+      <option name="closed" value="true" />
+      <created>1774361156814</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1774361156814</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat: add repositories for all entities">
+      <option name="closed" value="true" />
+      <created>1774361712917</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1774361712917</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat: add dto for all entities">
+      <option name="closed" value="true" />
+      <created>1774471050285</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1774471050285</updated>
+    </task>
+    <task id="LOCAL-00015" summary="delete: files">
+      <option name="closed" value="true" />
+      <created>1774471091148</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1774471091148</updated>
+    </task>
+    <task id="LOCAL-00016" summary="feat: add dockerFile, login and OpenApiConfig">
+      <option name="closed" value="true" />
+      <created>1776114965870</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1776114965870</updated>
+    </task>
+    <task id="LOCAL-00017" summary="update: entity (delete annotation @Data)">
+      <option name="closed" value="true" />
+      <created>1776115055072</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1776115055072</updated>
+    </task>
+    <task id="LOCAL-00018" summary="feat: add all for user">
+      <option name="closed" value="true" />
+      <created>1776202296662</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202296662</updated>
+    </task>
+    <task id="LOCAL-00019" summary="feat: add service">
+      <option name="closed" value="true" />
+      <created>1776202335895</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202335895</updated>
+    </task>
+    <task id="LOCAL-00020" summary="feat: add config jwt">
+      <option name="closed" value="true" />
+      <created>1776202364834</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202364834</updated>
+    </task>
+    <task id="LOCAL-00021" summary="update: add annotation for entity, fix mappers">
+      <option name="closed" value="true" />
+      <created>1776202500585</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202500585</updated>
+    </task>
+    <task id="LOCAL-00022" summary="feat: add FacilityRepository">
+      <option name="closed" value="true" />
+      <created>1776202535843</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202535843</updated>
+    </task>
+    <task id="LOCAL-00023" summary="update: edit auth service and controller">
+      <option name="closed" value="true" />
+      <created>1776202590799</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202590799</updated>
+    </task>
+    <task id="LOCAL-00024" summary="feat: add WardenController">
+      <option name="closed" value="true" />
+      <created>1776202621442</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1776202621442</updated>
+    </task>
+    <task id="LOCAL-00025" summary="feat: add jwt token&gt; spring security">
+      <option name="closed" value="true" />
+      <created>1777495497240</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1777495497240</updated>
+    </task>
+    <task id="LOCAL-00026" summary="refactor: add dependency">
+      <option name="closed" value="true" />
+      <created>1778692010912</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1778692010912</updated>
+    </task>
+    <task id="LOCAL-00027" summary="refactor: fix dto">
+      <option name="closed" value="true" />
+      <created>1778692042543</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1778692042543</updated>
+    </task>
+    <task id="LOCAL-00028" summary="refactor: add method">
+      <option name="closed" value="true" />
+      <created>1778692097346</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1778692097346</updated>
+    </task>
+    <task id="LOCAL-00029" summary="refactor: add method in repository">
+      <option name="closed" value="true" />
+      <created>1778692988134</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1778692988134</updated>
+    </task>
+    <task id="LOCAL-00030" summary="feat: add controllers">
+      <option name="closed" value="true" />
+      <created>1778694411709</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1778694411709</updated>
+    </task>
+    <task id="LOCAL-00031" summary="refactor: edit openApi and security files">
+      <option name="closed" value="true" />
+      <created>1778694472056</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1778694472056</updated>
+    </task>
+    <task id="LOCAL-00032" summary="refactor: edit controllers">
+      <option name="closed" value="true" />
+      <created>1778802141683</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1778802141683</updated>
+    </task>
+    <task id="LOCAL-00033" summary="feat: add login page(thymeleaf)">
+      <option name="closed" value="true" />
+      <created>1779048349044</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048349044</updated>
+    </task>
+    <task id="LOCAL-00034" summary="refactor: add thymeleaf dependency">
+      <option name="closed" value="true" />
+      <created>1779048425870</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048425870</updated>
+    </task>
+    <task id="LOCAL-00035" summary="feat: add repository">
+      <option name="closed" value="true" />
+      <created>1779048513501</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048513501</updated>
+    </task>
+    <task id="LOCAL-00036" summary="refactor: fix services logic">
+      <option name="closed" value="true" />
+      <created>1779048615584</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048615584</updated>
+    </task>
+    <task id="LOCAL-00037" summary="refactor: edit PK">
+      <option name="closed" value="true" />
+      <created>1779048664866</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048664866</updated>
+    </task>
+    <task id="LOCAL-00038" summary="refactor: edit mapper and dto">
+      <option name="closed" value="true" />
+      <created>1779048763709</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1779048763709</updated>
+    </task>
+    <task id="LOCAL-00039" summary="feat: add dormitory entity">
+      <option name="closed" value="true" />
+      <created>1779313233532</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1779313233532</updated>
+    </task>
+    <task id="LOCAL-00040" summary="refactor: fix Dto">
+      <option name="closed" value="true" />
+      <created>1779313279099</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1779313279099</updated>
+    </task>
+    <task id="LOCAL-00041" summary="refactor: fix Mappers, entity, repository and add new field">
+      <option name="closed" value="true" />
+      <created>1779313373931</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1779313373931</updated>
+    </task>
+    <task id="LOCAL-00042" summary="refactor: add methods for room, request">
+      <option name="closed" value="true" />
+      <created>1779743216918</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1779743216918</updated>
+    </task>
+    <task id="LOCAL-00043" summary="refactor: add methods for warden and preference">
+      <option name="closed" value="true" />
+      <created>1779743738286</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1779743738286</updated>
+    </task>
+    <task id="LOCAL-00044" summary="refactor: edit main logic">
+      <option name="closed" value="true" />
+      <created>1780004935551</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1780004935551</updated>
+    </task>
+    <task id="LOCAL-00045" summary="refactor: add methods for user">
+      <option name="closed" value="true" />
+      <created>1780004995733</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1780004995733</updated>
+    </task>
+    <task id="LOCAL-00046" summary="refactor: add dormitory and methods">
+      <option name="closed" value="true" />
+      <created>1780005052648</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1780005052648</updated>
+    </task>
+    <task id="LOCAL-00047" summary="feat: add html front Thymeleaf">
+      <option name="closed" value="true" />
+      <created>1780040854704</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1780040854704</updated>
+    </task>
+    <task id="LOCAL-00048" summary="feat: add mapping for controller">
+      <option name="closed" value="true" />
+      <created>1780436907875</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1780436907875</updated>
+    </task>
+    <task id="LOCAL-00049" summary="refactor: fix dto">
+      <option name="closed" value="true" />
+      <created>1780436951779</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1780436951779</updated>
+    </task>
+    <task id="LOCAL-00050" summary="refactor: fix work with request">
+      <option name="closed" value="true" />
+      <created>1780437025071</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1780437025071</updated>
+    </task>
+    <task id="LOCAL-00051" summary="refactor: edit db">
+      <option name="closed" value="true" />
+      <created>1780611755321</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1780611755321</updated>
+    </task>
+    <task id="LOCAL-00052" summary="refactor: edit entity">
+      <option name="closed" value="true" />
+      <created>1781181674969</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1781181674970</updated>
+    </task>
+    <task id="LOCAL-00053" summary="refactor: add files">
+      <option name="closed" value="true" />
+      <created>1781537278715</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1781537278715</updated>
+    </task>
+    <task id="LOCAL-00054" summary="feat: add test json files">
+      <option name="closed" value="true" />
+      <created>1781546980136</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1781546980136</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -231,15 +588,31 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Initial commit" />
-    <MESSAGE value="build: Init dependencies and configure yml" />
-    <MESSAGE value="feat: add project package structure and enums" />
-    <MESSAGE value="feat: create entities" />
-    <MESSAGE value="feat: add repositories for all entities" />
-    <MESSAGE value="feat: add liquibase migration scripts for initial schema" />
-    <MESSAGE value="build: add liquibase dependency" />
-    <MESSAGE value="feat: add all DTO classes with validation annotations" />
-    <MESSAGE value="update: liquibase script and schema database" />
-    <option name="LAST_COMMIT_MESSAGE" value="update: liquibase script and schema database" />
+    <MESSAGE value="feat: add controllers" />
+    <MESSAGE value="refactor: edit openApi and security files" />
+    <MESSAGE value="refactor: edit controllers" />
+    <MESSAGE value="feat: add login page(thymeleaf)" />
+    <MESSAGE value="refactor: add thymeleaf dependency" />
+    <MESSAGE value="feat: add repository" />
+    <MESSAGE value="refactor: fix services logic" />
+    <MESSAGE value="refactor: edit PK" />
+    <MESSAGE value="refactor: edit mapper and dto" />
+    <MESSAGE value="feat: add dormitory entity" />
+    <MESSAGE value="refactor: fix Dto" />
+    <MESSAGE value="refactor: fix Mappers, entity, repository and add new field" />
+    <MESSAGE value="refactor: add methods for room, request" />
+    <MESSAGE value="refactor: add methods for warden and preference" />
+    <MESSAGE value="refactor: edit main logic" />
+    <MESSAGE value="refactor: add methods for user" />
+    <MESSAGE value="refactor: add dormitory and methods" />
+    <MESSAGE value="feat: add html front Thymeleaf" />
+    <MESSAGE value="feat: add mapping for controller" />
+    <MESSAGE value="refactor: fix dto" />
+    <MESSAGE value="refactor: fix work with request" />
+    <MESSAGE value="refactor: edit db" />
+    <MESSAGE value="refactor: edit entity" />
+    <MESSAGE value="refactor: add files" />
+    <MESSAGE value="feat: add test json files" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add test json files" />
   </component>
 </project>

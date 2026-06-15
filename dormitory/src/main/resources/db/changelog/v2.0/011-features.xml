@@ -5,10 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <!--
-      Исходная v2.0-016 создаёт составной PK (requester, preferred, year) без id.
-      JPA ожидает суррогатный id. Если id уже есть (Hibernate/ручная миграция) — шаг пропускается.
-    -->
+
     <changeSet id="v2.0-017-request-preferences-add-id" author="Julia Khval">
         <preConditions onFail="MARK_RAN">
             <not>
