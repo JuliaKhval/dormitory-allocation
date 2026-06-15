@@ -47,7 +47,7 @@ public class RoomService {
                 .filter(room -> dormitoryId == null || room.getDormitory().getId().equals(dormitoryId))
                 .filter(room -> floor == null || room.getFloor().equals(floor))
                 .filter(room -> type == null || room.getType().name().equalsIgnoreCase(type))
-                .sorted(Comparator.comparing(Room::getId)) // сортировка по id
+                .sorted(Comparator.comparing(Room::getFloor).thenComparing(Room::getRoomNumber))
                 .map(room -> {
                     int occupied = allocationRepository.findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE).size();
                     return roomMapper.toDto(room, occupied);
@@ -115,11 +115,20 @@ public class RoomService {
 
         List<Allocation> allocations = allocationRepository.findByRoomIdAndStatus(id, AllocationStatus.ACTIVE);
         List<RoommateInfo> roommates = allocations.stream()
-                .map(a -> new RoommateInfo(
-                        a.getRequest().getUser().getId(),
-                        a.getRequest().getUser().getFullName(),
-                        a.getId()
-                ))
+                .map(a -> {
+                    var sd = a.getRequest().getUser().getStudentDetail();
+                    RoommateInfo info = new RoommateInfo();
+                    info.setUserId(a.getRequest().getUser().getId());
+                    info.setFullName(a.getRequest().getUser().getFullName());
+                    info.setAllocationId(a.getId());
+                    if (sd != null) {
+                        info.setFaculty(sd.getGroup().getFaculty().getName());
+                        info.setGroupName(sd.getGroup().getGroupName());
+                        info.setCountry(sd.getCountry().getName());
+                        info.setAverageScore(sd.getAverageScore());
+                    }
+                    return info;
+                })
                 .collect(Collectors.toList());
 
         RoomDto dto = roomMapper.toDto(room, occupied);

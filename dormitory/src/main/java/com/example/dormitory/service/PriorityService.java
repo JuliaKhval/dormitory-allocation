@@ -12,6 +12,9 @@ public class PriorityService {
                     .mapToInt(b -> b.getPriorityBonus())
                     .sum();
         }
+        if (student.getBenefitBonusAdjustment() != null) {
+            priority -= student.getBenefitBonusAdjustment();
+        }
         return priority;
     }
 }

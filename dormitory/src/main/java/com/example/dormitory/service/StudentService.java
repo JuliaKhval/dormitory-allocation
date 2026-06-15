@@ -23,6 +23,7 @@ public class StudentService {
     private final StudyGroupRepository studyGroupRepository;
     private final CountryRepository countryRepository;
     private final BenefitTypeRepository benefitTypeRepository;
+    private final DormitoryAssignmentService dormitoryAssignmentService;
 
     public StudentProfileDto getProfile(Long userId) {
         StudentDetail studentDetail = studentDetailRepository.findByUserId(userId)
@@ -31,7 +32,8 @@ public class StudentService {
     }
 
     // Список студентов для заселения (сортировка по приоритету)
-    public List<StudentProfileDto> getStudentsToAllocate() {
+    public List<StudentProfileDto> getStudentsToAllocate(String nameFilter,
+                                                         String gender, Long facultyId, Long countryId) {
         List<Request> activeRequests = requestRepository.findAll().stream()
                 .filter(r -> r.getAllocation() == null)
                 .collect(Collectors.toList());
@@ -40,7 +42,13 @@ public class StudentService {
                 priorityService.calculatePriority(r1.getUser().getStudentDetail())
         ));
         return activeRequests.stream()
-                .map(r -> studentProfileMapper.toDto(r.getUser().getStudentDetail()))
+                .map(r -> r.getUser().getStudentDetail())
+                .filter(sd -> nameFilter == null || nameFilter.isBlank()
+                        || sd.getUser().getFullName().toLowerCase().contains(nameFilter.toLowerCase()))
+                .filter(sd -> gender == null || gender.isBlank() || sd.getGender().name().equals(gender))
+                .filter(sd -> facultyId == null || sd.getGroup().getFaculty().getId().equals(facultyId))
+                .filter(sd -> countryId == null || sd.getCountry().getId().equals(countryId))
+                .map(studentProfileMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -65,6 +73,18 @@ public class StudentService {
         if (dto.getBenefitTypeIds() != null) {
             List<BenefitType> benefits = benefitTypeRepository.findAllById(dto.getBenefitTypeIds());
             sd.setBenefits(benefits);
+        }
+        if (dto.getBenefitBonusAdjustment() != null) {
+            sd.setBenefitBonusAdjustment(dto.getBenefitBonusAdjustment());
+        }
+        if (dto.getCourse() != null && dto.getGroupId() == null) {
+            StudyGroup current = sd.getGroup();
+            studyGroupRepository.findAll().stream()
+                    .filter(g -> g.getFaculty().getId().equals(current.getFaculty().getId())
+                            && g.getGroupName().equals(current.getGroupName())
+                            && g.getCourse().equals(dto.getCourse()))
+                    .findFirst()
+                    .ifPresent(sd::setGroup);
         }
         studentDetailRepository.save(sd);
         return studentProfileMapper.toDto(sd);

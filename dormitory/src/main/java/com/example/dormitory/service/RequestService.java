@@ -6,6 +6,7 @@ import com.example.dormitory.dto.UserProfileDto;
 import com.example.dormitory.entity.*;
 import com.example.dormitory.enums.AllocationStatus;
 import com.example.dormitory.enums.RequestPreferenceStatus;
+import com.example.dormitory.dto.PreferenceDto;
 import com.example.dormitory.mapper.RequestMapper;
 import com.example.dormitory.mapper.UserMapper;
 import com.example.dormitory.repository.*;
@@ -27,6 +28,8 @@ public class RequestService {
     private final RequestMapper requestMapper;
     private final AllocationRepository allocationRepository;
     private final UserMapper userMapper;
+    private final PriorityService priorityService;
+    private final DormitoryAssignmentService dormitoryAssignmentService;
 
     @Transactional
     public RequestDto createRequest(Long userId, CreateRequestDto dto) {
@@ -74,7 +77,7 @@ public class RequestService {
                         .status(RequestPreferenceStatus.PENDING)
                         .build();
                 preferenceRepository.save(pref);
-                // Вызываем проверку для КАЖДОГО созданного предпочтения
+
                 preferenceService.checkAndConfirmMutual(pref);
             }
         }
@@ -83,32 +86,49 @@ public class RequestService {
     }
     public List<RequestDto> getUserRequests(Long userId) {
         return requestRepository.findByUserId(userId).stream()
-                .map(req -> {
-                    RequestDto dto = requestMapper.toDto(req);
-                    dto.setRequestStatus(computeRequestStatus(req));
-                    if (req.getAllocation() != null) {
-                        fillRoommates(dto, req.getAllocation());
-                    }
-                    return dto;
-                })
+                .map(this::toEnrichedDto)
                 .collect(Collectors.toList());
     }
 
     public List<RequestDto> getAllRequests(String sortBy) {
-        List<Request> requests = requestRepository.findAllWithUser(); // нужен JOIN FETCH
+        List<Request> requests = requestRepository.findAllWithUser();
         if ("date".equalsIgnoreCase(sortBy)) {
             requests.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
+        } else {
+            requests.sort((r1, r2) -> Double.compare(
+                    priorityService.calculatePriority(r2.getUser().getStudentDetail()),
+                    priorityService.calculatePriority(r1.getUser().getStudentDetail())));
         }
         return requests.stream()
-                .map(req -> {
-                    RequestDto dto = requestMapper.toDto(req);
-                    dto.setRequestStatus(computeRequestStatus(req));
-                    if (req.getAllocation() != null) {
-                        fillRoommates(dto, req.getAllocation());
-                    }
-                    return dto;
-                })
+                .map(this::toEnrichedDto)
                 .collect(Collectors.toList());
+    }
+
+    private RequestDto toEnrichedDto(Request req) {
+        RequestDto dto = requestMapper.toDto(req);
+        dto.setRequestStatus(computeRequestStatus(req));
+        enrichPreferences(dto, req);
+        if (req.getAllocation() != null) {
+            fillRoommates(dto, req.getAllocation());
+        }
+        return dto;
+    }
+
+    private void enrichPreferences(RequestDto dto, Request req) {
+        if (dto.getPreferences() == null) return;
+        int year = req.getYear();
+        Long requesterId = req.getUser().getId();
+        for (PreferenceDto p : dto.getPreferences()) {
+            preferenceRepository.findByRequesterAndPreferred(p.getPreferredUserId(), requesterId, year)
+                    .ifPresent(reverse -> {
+                        p.setReversePreferenceExists(true);
+                        p.setMutual(p.getStatus() == RequestPreferenceStatus.APPROVED
+                                && reverse.getStatus() == RequestPreferenceStatus.APPROVED);
+                    });
+            if (!p.isReversePreferenceExists()) {
+                p.setMutual(false);
+            }
+        }
     }
 
     @Transactional

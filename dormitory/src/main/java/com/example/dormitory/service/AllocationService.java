@@ -2,7 +2,9 @@ package com.example.dormitory.service;
 
 import com.example.dormitory.dto.AllocationDto;
 import com.example.dormitory.dto.AllocationResultDto;
+import com.example.dormitory.dto.RoomSuggestionDto;
 import com.example.dormitory.dto.UserProfileDto;
+import com.example.dormitory.entity.AllocationSettings;
 import com.example.dormitory.entity.*;
 import com.example.dormitory.enums.AllocationStatus;
 import com.example.dormitory.enums.Gender;
@@ -12,6 +14,8 @@ import com.example.dormitory.mapper.AllocationMapper;
 import com.example.dormitory.mapper.UserMapper;
 import com.example.dormitory.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AllocationService {
+
     private final RequestRepository requestRepository;
     private final RoomRepository roomRepository;
     private final AllocationRepository allocationRepository;
@@ -30,12 +35,15 @@ public class AllocationService {
     private final AllocationMapper allocationMapper;
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final AllocationSettingsRepository allocationSettingsRepository;
+    private final DormitoryAssignmentService dormitoryAssignmentService;
+    private final DormitoryRepository   dormitoryRepository;
 
     // ========================= ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =========================
 
     /**
-     * Извлекает код блока из номера комнаты.
-     * Пример: "101А" -> "101", "202" -> "202", "15Б" -> "15"
+     * Извлекает код блока из номера комнаты (всё до последней буквы).
+     * Пример: "101А" -> "101", "202" -> "202"
      */
     private String extractBlockCode(String roomNumber) {
         if (roomNumber == null || roomNumber.isBlank()) return "";
@@ -46,51 +54,69 @@ public class AllocationService {
     }
 
     /**
-     * Синхронизирует тип всех комнат блока, если в текущую комнату заселяется первый жилец.
-     * Все комнаты блока, имеющие тип UNDEFINED, получают тип, соответствующий полу заселяемого студента.
+     * Синхронизирует тип всех комнат блока при первом заселении в любую из них.
+     * Все комнаты блока с типом UNDEFINED получают тип, соответствующий полу заселяемого студента.
      */
     private void syncBlockIfFirstOccupant(Room room, Gender gender) {
-        boolean isOccupied = !allocationRepository.findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE).isEmpty();
-        if (isOccupied) {
-            // В комнате уже кто-то есть – блок уже синхронизирован ранее
-            return;
-        }
-        // Первый жилец в этой комнате – определяем тип блока
+        boolean isOccupied = !allocationRepository
+                .findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE)
+                .isEmpty();
+        if (isOccupied) return; // в комнате уже кто-то есть – блок уже синхронизирован
+
+        // Первый жилец – определяем тип блока
         RoomType targetType = (gender == Gender.MALE) ? RoomType.MALE : RoomType.FEMALE;
         room.setType(targetType);
         roomRepository.save(room);
 
         String blockCode = extractBlockCode(room.getRoomNumber());
-        List<Room> sameBlockRooms = roomRepository.findSameBlockRooms(
+        List<Room> blockRooms = roomRepository.findSameBlockRooms(
                 room.getDormitory().getId(), room.getId(), blockCode
         );
-        for (Room br : sameBlockRooms) {
+        for (Room br : blockRooms) {
             if (br.getType() == RoomType.UNDEFINED) {
                 br.setType(targetType);
                 roomRepository.save(br);
             }
         }
     }
-
+    private void initBlockType(Room room, Gender gender) {
+        RoomType targetType = (gender == Gender.MALE) ? RoomType.MALE : RoomType.FEMALE;
+        String blockCode = extractBlockCode(room.getRoomNumber());
+        // Сначала меняем текущую комнату, если она UNDEFINED
+        if (room.getType() == RoomType.UNDEFINED) {
+            room.setType(targetType);
+            roomRepository.save(room);
+        }
+        // Находим все комнаты того же блока (с одинаковым числовым префиксом)
+        List<Room> blockRooms = roomRepository.findSameBlockRooms(room.getDormitory().getId(), room.getId(), blockCode);
+        for (Room br : blockRooms) {
+            if (br.getType() == RoomType.UNDEFINED) {
+                br.setType(targetType);
+                roomRepository.save(br);
+            }
+        }
+    }
     /**
-     * Формирует группы заявок на основе взаимно одобренных предпочтений.
-     * Возвращает список групп, где каждая группа – список пользователей, которые должны заселяться вместе.
+     * Формирует группы студентов на основе взаимных APPROVED предпочтений.
+     * Возвращает список групп (каждая группа – список пользователей).
      */
     private List<List<User>> buildMutualGroups(List<Request> requests) {
-        // Маппинг: пользователь -> множество пользователей, взаимно одобривших друг друга
+        // Карта: ID пользователя -> множество ID взаимно одобренных пользователей
         Map<Long, Set<Long>> mutualGraph = new HashMap<>();
 
+        // Заполняем граф взаимных одобрений
         for (Request req : requests) {
             User user = req.getUser();
             mutualGraph.putIfAbsent(user.getId(), new HashSet<>());
-
-            // Проходим по всем предпочтениям текущей заявки
             for (RequestPreference pref : req.getPreferences()) {
                 if (pref.getStatus() == RequestPreferenceStatus.APPROVED) {
                     User preferred = pref.getPreferredUser();
-                    // Проверяем, есть ли встречное APPROVED предпочтение от preferred к user
+                    // Проверяем, есть ли встречное APPROVED предпочтение
                     Request preferredRequest = requestRepository.findByUserId(preferred.getId())
-                            .stream().filter(r -> r.getAllocation() == null).findFirst().orElse(null);
+                            .stream()
+                            .filter(r -> r.getAllocation() == null)
+                            .findFirst()
+                            .orElse(null);
                     if (preferredRequest != null) {
                         boolean mutual = preferredRequest.getPreferences().stream()
                                 .anyMatch(p -> p.getPreferredUser().getId().equals(user.getId())
@@ -104,7 +130,7 @@ public class AllocationService {
             }
         }
 
-        // Поиск компонент связности в графе взаимных предпочтений
+        // Поиск компонент связности (групп)
         Set<Long> visited = new HashSet<>();
         List<List<User>> groups = new ArrayList<>();
 
@@ -112,7 +138,7 @@ public class AllocationService {
             Long userId = req.getUser().getId();
             if (visited.contains(userId)) continue;
 
-            // BFS/DFS для сбора компоненты
+            // BFS для сбора компоненты
             Set<Long> component = new HashSet<>();
             Deque<Long> stack = new ArrayDeque<>();
             stack.push(userId);
@@ -129,7 +155,7 @@ public class AllocationService {
             }
 
             if (component.size() > 1) {
-                // Группа из двух и более взаимно одобренных студентов
+                // Группа из нескольких взаимно одобренных студентов
                 List<User> groupUsers = new ArrayList<>();
                 for (Long id : component) {
                     requestRepository.findByUserId(id).stream()
@@ -137,13 +163,11 @@ public class AllocationService {
                             .findFirst()
                             .ifPresent(r -> groupUsers.add(r.getUser()));
                 }
-                if (!groupUsers.isEmpty()) {
-                    groups.add(groupUsers);
-                }
+                if (!groupUsers.isEmpty()) groups.add(groupUsers);
             }
         }
 
-        // Добавляем одиночные заявки (у которых нет взаимных одобрений)
+        // Добавляем одиночные заявки (не вошедшие в группы)
         for (Request req : requests) {
             Long userId = req.getUser().getId();
             boolean alreadyInGroup = groups.stream().anyMatch(g -> g.stream().anyMatch(u -> u.getId().equals(userId)));
@@ -152,34 +176,67 @@ public class AllocationService {
             }
         }
 
+        // Сортируем группы по максимальному приоритету внутри группы (убывание)
+        groups.sort((g1, g2) -> {
+            double max1 = g1.stream().mapToDouble(u -> priorityService.calculatePriority(u.getStudentDetail())).max().orElse(0);
+            double max2 = g2.stream().mapToDouble(u -> priorityService.calculatePriority(u.getStudentDetail())).max().orElse(0);
+            return Double.compare(max2, max1);
+        });
+
         return groups;
     }
 
     /**
      * Поиск комнаты, способной вместить всю группу пользователей.
-     * Учитываются текущие жильцы комнаты, пол, страна, вместимость.
-     * Не проверяются одобренные соседи (так как группа уже взаимно одобрена).
+     * Проверяются пол, страна, вместимость. Группа уже взаимно одобрена, поэтому проверка approvedRoommates не нужна.
      */
-    private Room findRoomForGroup(List<User> users, List<Room> exclude) {
+    private List<Room> sortRoomsForGroup(List<Room> rooms, List<User> users, AllocationSettings settings) {
+        boolean hasBenefit = users.stream().anyMatch(u ->
+                u.getStudentDetail().getBenefits() != null && !u.getStudentDetail().getBenefits().isEmpty());
+        List<Integer> floorOrder = settings != null && settings.getFloorOrder() != null
+                ? Arrays.stream(settings.getFloorOrder().split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).map(Integer::parseInt).toList()
+                : List.of();
+        Integer benefitFloorStart = settings != null ? settings.getBenefitFloorStart() : null;
+
+        return rooms.stream().sorted((r1, r2) -> {
+            if (hasBenefit && benefitFloorStart != null) {
+                boolean r1Benefit = r1.getFloor() >= benefitFloorStart;
+                boolean r2Benefit = r2.getFloor() >= benefitFloorStart;
+                if (r1Benefit != r2Benefit) return r1Benefit ? -1 : 1;
+            }
+            if (!floorOrder.isEmpty()) {
+                int i1 = floorOrder.indexOf(r1.getFloor());
+                int i2 = floorOrder.indexOf(r2.getFloor());
+                int o1 = i1 < 0 ? Integer.MAX_VALUE : i1;
+                int o2 = i2 < 0 ? Integer.MAX_VALUE : i2;
+                if (o1 != o2) return Integer.compare(o1, o2);
+            }
+            return Integer.compare(r1.getFloor(), r2.getFloor());
+        }).collect(Collectors.toList());
+    }
+
+    private Room findRoomForGroup(List<User> users, Long dormitoryId, AllocationSettings settings) {
         int neededSlots = users.size();
+        if (users.isEmpty()) return null;
         StudentDetail sample = users.get(0).getStudentDetail();
         String requiredCountry = sample.getCountry().getName();
         Gender requiredGender = sample.getGender();
 
-        for (Room room : roomRepository.findAll()) {
-            if (exclude != null && exclude.contains(room)) continue;
+        List<Room> candidateRooms = roomRepository.findByDormitoryId(dormitoryId);
+        candidateRooms = sortRoomsForGroup(candidateRooms, users, settings);
 
-            // Текущие жильцы комнаты
+        for (Room room : candidateRooms) {
             List<StudentDetail> current = allocationRepository
                     .findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE)
                     .stream()
                     .map(a -> a.getRequest().getUser().getStudentDetail())
                     .collect(Collectors.toList());
 
-            // Проверка вместимости
+            // Вместимость
             if (room.getCapacity() < current.size() + neededSlots) continue;
 
-            // Проверка пола: комната должна быть UNDEFINED или совпадать с полом группы
+            // Пол комнаты
             if (room.getType() != RoomType.UNDEFINED) {
                 if ((room.getType() == RoomType.MALE && requiredGender != Gender.MALE) ||
                         (room.getType() == RoomType.FEMALE && requiredGender != Gender.FEMALE)) {
@@ -187,7 +244,7 @@ public class AllocationService {
                 }
             }
 
-            // Проверка страны: все текущие жильцы и все члены группы должны быть из одной страны
+            // Страна: все текущие жильцы и все члены группы должны быть из одной страны
             boolean countryOk = true;
             if (!current.isEmpty()) {
                 String currentCountry = current.get(0).getCountry().getName();
@@ -200,8 +257,6 @@ public class AllocationService {
                 }
                 if (!countryOk) continue;
             }
-            // Все члены группы уже из одной страны (по построению группы)
-            // Дополнительная проверка на случай, если в группе оказались разные страны (быть не должно)
             for (User u : users) {
                 if (!u.getStudentDetail().getCountry().getName().equals(requiredCountry)) {
                     countryOk = false;
@@ -210,7 +265,7 @@ public class AllocationService {
             }
             if (!countryOk) continue;
 
-            // Если все проверки пройдены – комната подходит
+            // Все проверки пройдены
             return room;
         }
         return null;
@@ -219,39 +274,31 @@ public class AllocationService {
     // ========================= ОСНОВНЫЕ МЕТОДЫ =========================
 
     @Transactional
-    public AllocationResultDto runAllocation() {
+    public AllocationResultDto runAllocation(Long dormitoryId) {
+        if (dormitoryId == null) {
+            throw new RuntimeException("Dormitory id is required for allocation");
+        }
+        AllocationSettings settings = allocationSettingsRepository.findById(dormitoryId).orElse(null);
+
         List<Request> activeRequests = requestRepository.findAll().stream()
                 .filter(r -> r.getAllocation() == null)
+                .filter(r -> dormitoryId.equals(dormitoryAssignmentService.resolveTargetDormitory(r.getUser().getStudentDetail())))
                 .collect(Collectors.toList());
-        if (activeRequests.isEmpty()) {
-            return new AllocationResultDto();
-        }
+        if (activeRequests.isEmpty()) return new AllocationResultDto();
 
-        // Сортировка заявок по приоритету (убывание) и дате создания
-        activeRequests.sort((r1, r2) -> {
-            double p1 = priorityService.calculatePriority(r1.getUser().getStudentDetail());
-            double p2 = priorityService.calculatePriority(r2.getUser().getStudentDetail());
-            if (Double.compare(p2, p1) != 0) return Double.compare(p2, p1);
-            return r1.getCreatedAt().compareTo(r2.getCreatedAt());
-        });
+        activeRequests = sortRequestsByFacultyPriority(activeRequests, settings);
 
-        // Формирование групп на основе взаимных одобрений
         List<List<User>> groups = buildMutualGroups(activeRequests);
-        // Сортировка групп по максимальному приоритету внутри группы (для жадности)
-        groups.sort((g1, g2) -> {
-            double maxP1 = g1.stream().mapToDouble(u -> priorityService.calculatePriority(u.getStudentDetail())).max().orElse(0);
-            double maxP2 = g2.stream().mapToDouble(u -> priorityService.calculatePriority(u.getStudentDetail())).max().orElse(0);
-            return Double.compare(maxP2, maxP1);
-        });
 
         List<AllocationDto> allocations = new ArrayList<>();
         List<Long> unallocatedRequestIds = new ArrayList<>();
 
         for (List<User> group : groups) {
-            Room selectedRoom = findRoomForGroup(group, null);
+            Room selectedRoom = findRoomForGroup(group, dormitoryId, settings);
             if (selectedRoom != null) {
                 // Заселяем всю группу в одну комнату
-                boolean firstInRoom = allocationRepository.findByRoomIdAndStatus(selectedRoom.getId(), AllocationStatus.ACTIVE).isEmpty();
+                boolean wasEmpty = allocationRepository.findByRoomIdAndStatus(selectedRoom.getId(), AllocationStatus.ACTIVE).isEmpty();
+
                 for (User u : group) {
                     Request req = requestRepository.findByUserId(u.getId()).stream()
                             .filter(r -> r.getAllocation() == null)
@@ -265,15 +312,17 @@ public class AllocationService {
                                 .allocatedAt(LocalDateTime.now())
                                 .build();
                         allocationRepository.save(alloc);
+
                         allocations.add(allocationMapper.toDto(alloc));
                     }
                 }
-                if (firstInRoom && !group.isEmpty()) {
-                    // Синхронизация типа блока при первом заселении
-                    syncBlockIfFirstOccupant(selectedRoom, group.get(0).getStudentDetail().getGender());
+                // Если комната была пуста до заселения – синхронизируем блок
+                if (wasEmpty && !group.isEmpty()) {
+                    initBlockType(selectedRoom, group.get(0).getStudentDetail().getGender());
                 }
+
             } else {
-                // Группа не нашла комнату – вся группа нераспределена
+                // Комната не найдена – вся группа нераспределена
                 for (User u : group) {
                     requestRepository.findByUserId(u.getId()).stream()
                             .filter(r -> r.getAllocation() == null)
@@ -290,11 +339,24 @@ public class AllocationService {
     }
 
     @Transactional
-    public AllocationDto manualAllocate(Long studentId, Long roomId) {
-        User user = userRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public AllocationDto manualAllocate(Long studentId, Long roomId, Long wardenUserId) {
+        // Проверка, что комендант существует и привязан к общежитию
+        User warden = userRepository.findById(wardenUserId)
+                .orElseThrow(() -> new RuntimeException("Warden not found"));
+        Dormitory wardenDormitory = dormitoryRepository.findByWardenId(warden.getId())
+                .orElseThrow(() -> new RuntimeException("Warden is not assigned to any dormitory"));
+
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
+        // Комната должна принадлежать общежитию коменданта
+        if (!room.getDormitory().getId().equals(wardenDormitory.getId())) {
+            throw new RuntimeException("You can only allocate students to rooms in your own dormitory");
+        }
+
+        // Далее существующая логика поиска пользователя, заявки, проверка совместимости и т.д.
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
         Request request = requestRepository.findByUserId(user.getId()).stream()
                 .filter(r -> r.getAllocation() == null)
                 .findFirst()
@@ -306,10 +368,12 @@ public class AllocationService {
                 .map(a -> a.getRequest().getUser().getStudentDetail())
                 .collect(Collectors.toList());
 
-        // Проверка совместимости (без учёта одобренных соседей, т.к. ручное распределение)
+        // Проверка совместимости
         if (!compatibilityService.isCompatible(user.getStudentDetail(), room, current, List.of())) {
             throw new RuntimeException("Incompatible: check gender, country, or capacity");
         }
+
+        boolean wasEmpty = current.isEmpty();
 
         Allocation allocation = Allocation.builder()
                 .request(request)
@@ -319,8 +383,9 @@ public class AllocationService {
                 .build();
         allocationRepository.save(allocation);
 
-        // Синхронизация блока, если это первый жилец в комнате
-        syncBlockIfFirstOccupant(room, user.getStudentDetail().getGender());
+        if (wasEmpty) {
+            initBlockType(room, user.getStudentDetail().getGender());
+        }
 
         return allocationMapper.toDto(allocation);
     }
@@ -330,15 +395,21 @@ public class AllocationService {
         Allocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new RuntimeException("Allocation not found"));
         Long roomId = allocation.getRoom().getId();
+        Request request = allocation.getRequest();
+
+        // 1. Разрываем связь со стороны Request
+        request.setAllocation(null);
+        requestRepository.save(request);  // сохраняем Request с обнулённой ссылкой
+
+        // 2. Удаляем Allocation
         allocationRepository.delete(allocation);
 
-        // Если комната опустела, сбрасываем её тип на UNDEFINED и тип всех комнат блока? (по желанию)
+        // 3. Проверяем, опустела ли комната
         List<Allocation> remaining = allocationRepository.findByRoomIdAndStatus(roomId, AllocationStatus.ACTIVE);
         if (remaining.isEmpty()) {
             Room room = allocation.getRoom();
             room.setType(RoomType.UNDEFINED);
             roomRepository.save(room);
-            // Можно также сбросить тип других комнат блока, но это не требуется по ТЗ
         }
     }
 
@@ -361,6 +432,65 @@ public class AllocationService {
 
     @Transactional
     public void confirmAllocation() {
-        // Метод заглушка – можно оставить пустым
+        // Заглушка – можно оставить пустой
+    }
+
+    private List<Request> sortRequestsByFacultyPriority(List<Request> requests, AllocationSettings settings) {
+        if (settings == null || settings.getFacultyPriorityOrder() == null || settings.getFacultyPriorityOrder().isBlank()) {
+            return requests;
+        }
+        List<Long> facultyOrder = Arrays.stream(settings.getFacultyPriorityOrder().split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).map(Long::parseLong).toList();
+        List<Request> sorted = new ArrayList<>(requests);
+        sorted.sort((r1, r2) -> {
+            Long f1 = r1.getUser().getStudentDetail().getGroup().getFaculty().getId();
+            Long f2 = r2.getUser().getStudentDetail().getGroup().getFaculty().getId();
+            int i1 = facultyOrder.indexOf(f1);
+            int i2 = facultyOrder.indexOf(f2);
+            return Integer.compare(i1 < 0 ? Integer.MAX_VALUE : i1, i2 < 0 ? Integer.MAX_VALUE : i2);
+        });
+        return sorted;
+    }
+
+    public List<RoomSuggestionDto> suggestRoomsForRelocation(Long allocationId) {
+        Allocation allocation = allocationRepository.findById(allocationId)
+                .orElseThrow(() -> new RuntimeException("Allocation not found"));
+        User user = allocation.getRequest().getUser();
+        StudentDetail student = user.getStudentDetail();
+        Long dormitoryId = allocation.getRoom().getDormitory().getId();
+        List<Room> rooms = roomRepository.findByDormitoryId(dormitoryId);
+
+        List<RoomSuggestionDto> suggestions = new ArrayList<>();
+        for (Room room : rooms) {
+            if (room.getId().equals(allocation.getRoom().getId())) continue;
+            List<StudentDetail> current = allocationRepository
+                    .findByRoomIdAndStatus(room.getId(), AllocationStatus.ACTIVE)
+                    .stream()
+                    .map(a -> a.getRequest().getUser().getStudentDetail())
+                    .collect(Collectors.toList());
+            if (compatibilityService.isCompatible(student, room, current, List.of())) {
+                RoomSuggestionDto dto = new RoomSuggestionDto();
+                dto.setRoomId(room.getId());
+                dto.setDormitoryName(room.getDormitory().getName());
+                dto.setFloor(room.getFloor());
+                dto.setRoomNumber(room.getRoomNumber());
+                dto.setCapacity(room.getCapacity());
+                dto.setOccupied(current.size());
+                dto.setFreeSlots(room.getCapacity() - current.size());
+                dto.setType(room.getType().name());
+                suggestions.add(dto);
+            }
+        }
+        suggestions.sort(Comparator.comparing(RoomSuggestionDto::getFloor).thenComparing(RoomSuggestionDto::getRoomNumber));
+        return suggestions;
+    }
+
+    @Transactional
+    public AllocationDto relocateStudent(Long allocationId, Long targetRoomId, Long wardenUserId) {
+        Allocation allocation = allocationRepository.findById(allocationId)
+                .orElseThrow(() -> new RuntimeException("Allocation not found"));
+        Long userId = allocation.getRequest().getUser().getId();
+        evictStudent(allocationId);
+        return manualAllocate(userId, targetRoomId, wardenUserId);
     }
 }

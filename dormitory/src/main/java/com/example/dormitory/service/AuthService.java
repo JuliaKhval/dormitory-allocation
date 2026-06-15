@@ -24,10 +24,20 @@ public class AuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         String token = jwtUtils.generateToken(userDetails);
         String role = userDetails.getAuthorities().stream()
-                .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .map(r -> r.replace("ROLE_", ""))
+                .filter(r -> r.equals("ADMIN") || r.equals("WARDEN") || r.equals("STUDENT"))
+                .sorted((a, b) -> rolePriority(a) - rolePriority(b))
+                .findFirst()
                 .orElse("STUDENT");
         return new JwtResponse(token, userDetails.getUser().getId(), request.getEmail(), role);
+    }
+
+    private static int rolePriority(String role) {
+        return switch (role) {
+            case "ADMIN" -> 0;
+            case "WARDEN" -> 1;
+            default -> 2;
+        };
     }
 }
