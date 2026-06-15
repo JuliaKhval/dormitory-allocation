@@ -47,8 +47,10 @@ public class RequestController {
 
     @GetMapping
     @PreAuthorize("hasRole('WARDEN')")
-    public ResponseEntity<List<RequestDto>> getAllRequests(@RequestParam(required = false) String sortBy) {
-
+    public ResponseEntity<List<RequestDto>> getAllRequests(
+            @RequestParam(required = false) String sortBy,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        Long dormitoryId = currentUser.getDormitoryId();
         return ResponseEntity.ok(requestService.getAllRequests(sortBy));
     }
 }

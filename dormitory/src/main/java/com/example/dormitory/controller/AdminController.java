@@ -3,10 +3,7 @@ package com.example.dormitory.controller;
 import com.example.dormitory.dto.*;
 import com.example.dormitory.entity.*;
 import com.example.dormitory.repository.*;
-import com.example.dormitory.service.StudentService;
-import com.example.dormitory.service.TestDataService;
-import com.example.dormitory.service.UserService;
-import com.example.dormitory.service.WardenService;
+import com.example.dormitory.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +25,8 @@ public class AdminController {
     private final DormitoryRepository dormitoryRepository;
     private final FacilityRepository facilityRepository;
     private final TestDataService testDataService;
+    private final FacultyRepository facultyRepository;
+    private final AllocationSettingsService allocationSettingsService;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,8 +107,49 @@ public class AdminController {
     @PostMapping("/test-data")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> generateTestData(@RequestBody(required = false) GenerateTestDataDto dto) {
-        int count = dto != null ? dto.getStudentCount() : 50;
-        testDataService.generateTestData(count, count);
+        if (dto != null && dto.getDataset() != null && !dto.getDataset().isBlank() && !"random".equalsIgnoreCase(dto.getDataset())) {
+            testDataService.loadDatasetFromJson(dto.getDataset());
+        } else {
+            int count = dto != null ? dto.getStudentCount() : 50;
+            testDataService.generateTestData(count, count);
+        }
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/test-data/datasets")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<String>> listTestDatasets() {
+        return ResponseEntity.ok(testDataService.listAvailableDatasets());
+    }
+
+    @GetMapping("/faculties")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WARDEN')")
+    public ResponseEntity<List<Faculty>> getAllFaculties() {
+        return ResponseEntity.ok(facultyRepository.findAll());
+    }
+
+    @PutMapping("/benefits/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BenefitType> updateBenefit(@PathVariable Long id, @RequestBody BenefitType dto) {
+        BenefitType benefit = benefitTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Benefit not found"));
+        if (dto.getPriorityBonus() != null) benefit.setPriorityBonus(dto.getPriorityBonus());
+        if (dto.getName() != null) benefit.setName(dto.getName());
+        if (dto.getDescription() != null) benefit.setDescription(dto.getDescription());
+        return ResponseEntity.ok(benefitTypeRepository.save(benefit));
+    }
+
+    @GetMapping("/dormitories/{dormitoryId}/allocation-settings")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AllocationSettingsDto> getAllocationSettings(@PathVariable Long dormitoryId) {
+        return ResponseEntity.ok(allocationSettingsService.getForDormitory(dormitoryId));
+    }
+
+    @PutMapping("/dormitories/{dormitoryId}/allocation-settings")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AllocationSettingsDto> saveAllocationSettings(
+            @PathVariable Long dormitoryId, @RequestBody AllocationSettingsDto dto) {
+        return ResponseEntity.ok(allocationSettingsService.save(dormitoryId, dto));
+    }
+
 }

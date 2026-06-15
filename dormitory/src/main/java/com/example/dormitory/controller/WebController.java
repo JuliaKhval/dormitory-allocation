@@ -13,7 +13,6 @@ public class WebController {
 
     @GetMapping("/")
     public String index() {
-        // Перенаправляем на страницу логина
         return "redirect:/login";
     }
 
